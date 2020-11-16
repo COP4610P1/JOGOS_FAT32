@@ -1,3 +1,12 @@
+/**
+ * There is only one sector per cluster
+ *  each cluster/sector has data at the root
+ * each data entry is 32 byte 
+ * each cluster is 512 byte
+ * 512/32 = 16 bytes 
+ * root cluster is cluster 2 
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -5,91 +14,106 @@
 #include <fcntl.h>
 #include "project3.h"
 
+//variables
+struct UtilityProps utilityProps;
+
+struct BPBInfo bpbInfo;
+struct DIRENTRY dirEntry;
+
 void setBPBInfo(int file)
 {
-    getFileData(file, 11, bpbInfo.BPB_BytsPerSec, 2);
-    getFileData(file, 13, bpbInfo.BPB_SecPerClus, 1);
-    getFileData(file, 14, bpbInfo.BPB_RsvdSecCnt, 2);
-    getFileData(file, 16, bpbInfo.BPB_NumFATs, 1);
-    getFileData(file, 17, bpbInfo.BPB_RootEntCnt, 2);
-    getFileData(file, 36, bpbInfo.BPB_FATSz32, 4);
-    getFileData(file, 44, bpbInfo.BPB_RootClus, 4);
-    getFileData(file, 32, bpbInfo.BPB_TotSec32, 4);
-}
-
-void getFileData(int file, int offset, char *destination, int bytes)
-{
-    unsigned char *info;
-
-    lseek(file, offset, SEEK_SET);
-
-    info = (unsigned char *)malloc(sizeof(unsigned char) * bytes);
-
-    read(file, info, bytes);
-
-    memcpy(destination, info, bytes);
+    getFileData(file);
+    getFirstDataSectorForCluster();
 }
 
 void getFileData(int file)
 {
     unsigned char *info;
 
-    lseek(file, offset, SEEK_SET);
+    lseek(file, 11, SEEK_SET);
 
-    info = (unsigned char *)malloc(sizeof(unsigned char) * bytes);
+    info = (unsigned char *)malloc(sizeof(unsigned char) * 512);
 
-    read(file, info, bytes);
+    read(file, info, 512);
 
-    memcpy(destination, info, bytes);
+    memcpy(&bpbInfo, info, sizeof(struct BPBInfo));
 }
 
 void displayBPBInfo()
 {
-
-    printf("BPB_BytsPerSec : ");
-    printRawData(bpbInfo.BPB_BytsPerSec, 2);
-
-    printf("BPB_SecPerClus : ");
-    printRawData(bpbInfo.BPB_SecPerClus, 1);
-
-    printf("BPB_RsvdSecCnt : ");
-    printRawData(bpbInfo.BPB_RsvdSecCnt, 2);
-
-    printf("BPB_NumFATs : ");
-    printRawData(bpbInfo.BPB_NumFATs, 1);
-
-    printf("BPB_FATSz32 : ");
-    printRawData(bpbInfo.BPB_FATSz32, 4);
-
-    printf("BPB_RootClus : ");
-    printRawData(bpbInfo.BPB_RootClus, 4);
-
-    printf("BPB_TotSec32 : ");
-    printRawData(bpbInfo.BPB_TotSec32, 4);
-}
-
-void printRawData(char *data, int len)
-{
-
-    //int len = sizeof(data) / sizeof(*data);
-
-    for (int i = 0; i < len; i++)
-    {
-        printf("%02x ", data[i]);
-        if ((i + 1) % 16 == 0)
-            printf("\n");
-    }
-    printf("\n");
+    printf("\n****basic info****\n");
+    printf("BPB_BytsPerSec : %d \n", bpbInfo.BPB_BytsPerSec);
+    printf("BPB_SecPerClus : %d \n", (int)bpbInfo.BPB_SecPerClus);
+    printf("BPB_RsvdSecCnt : %d \n", bpbInfo.BPB_RsvdSecCnt);
+    printf("BPB_NumFATs : %d \n", (int)bpbInfo.BPB_NumFATs);
+    printf("BPB_RootEntCnt : %d \n", bpbInfo.BPB_RootEntCnt);
+    printf("BPB_TotSec32 : %d \n", bpbInfo.BPB_TotSec32);
+    printf("BPB_RootClus : %d \n", bpbInfo.BPB_RootClus);
+    printf("BPB_FATSz32 : %d \n", bpbInfo.BPB_FATSz32);
 }
 
 void clusterCount()
 {
+    printf("\n****getting cluster count****");
+    //fat32 root directory sectors will always be zero
+    utilityProps.rootDirSectors = 0;
+    printf("\nrootDirSectors count : %d ", utilityProps.rootDirSectors);
+    utilityProps.dataSec = bpbInfo.BPB_TotSec32 -
+                           (bpbInfo.BPB_RsvdSecCnt + (bpbInfo.BPB_NumFATs * bpbInfo.BPB_FATSz32) +
+                            utilityProps.rootDirSectors);
 
-    printf("cluster count");
+    printf("\ndataSec count : %d ", utilityProps.dataSec);
+
+    utilityProps.countOfClusters = utilityProps.dataSec / (int)bpbInfo.BPB_SecPerClus;
+
+    printf("\ncountOfClusters count : %d ", utilityProps.countOfClusters);
 }
 
-void _testexit(void)
+int getFatOffset(int cluster)
 {
-    int RootDirSectors = 0;
-    printf("Hello world!");
+    return bpbInfo.BPB_RsvdSecCnt *
+               bpbInfo.BPB_BytsPerSec +
+           cluster * 4;
+}
+
+// reflect slide 13 in BPB commands
+int getFirstDataSectorForCluster()
+{
+    utilityProps.firstDataSector =
+        bpbInfo.BPB_RsvdSecCnt + (bpbInfo.BPB_NumFATs * bpbInfo.BPB_FATSz32);
+
+    return utilityProps.firstDataSector;
+}
+
+//getting the the cluster/sector offset for any cluster
+unsigned int getClusterOffset(int cluster)
+{
+    // getting the byteoffset for the cluster/sector; slide 15
+    unsigned int byteOffset = utilityProps.firstDataSector + ((cluster - 2) * (unsigned int)bpbInfo.BPB_SecPerClus);
+    return byteOffset * bpbInfo.BPB_BytsPerSec;
+}
+
+void listDataEntry(int file, int clusterOffset)
+{
+
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERCLUSTER);
+
+    int nextDataEntry = 0;
+
+    for (int i = 0; i < ENTRYPERCLUSTER; i++)
+    {
+        lseek(file, clusterOffset + nextDataEntry, SEEK_SET);
+
+        read(file, info, BYTESPERCLUSTER);
+
+        memcpy(&dirEntry, info, sizeof(struct DIRENTRY));
+        dirEntry.DIR_name[11] = '\0';
+
+        printf("DIR_name : %s \n", dirEntry.DIR_name);
+        printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
+        printf("DIR_Attributes : %u \n", (unsigned int)dirEntry.DIR_Attributes);
+
+        printf("\n");
+        nextDataEntry += BYTESPERCLUSTER;
+    }
 }

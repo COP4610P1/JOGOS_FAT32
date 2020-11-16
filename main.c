@@ -27,47 +27,22 @@ int main(int argc, char **argv)
 
     if (pf == -1)
     {
-        //printf("File doesn't exit\n");
         fprintf(stderr, "File doesn't exit\n");
         return -1;
     }
-    lseek(pf, 13, SEEK_SET);
-
-    BPB_BytesPerSec = (unsigned char *)malloc(sizeof(unsigned char) * 1);
-
-    // int test = read(pf, BPB_BytesPerSec, 1);
-    // BPB_BytesPerSec[test] = '\0';
-
-    //fwrite(BPB_BytesPerSec, 1, 10000, stdout);
-    //malloc(bpbInfo.BPB_SecPerClus, sizeof(unsigned char) * 2);
-
-    memcpy(&bpbInfo.BPB_SecPerClus, BPB_BytesPerSec, sizeof(bpbInfo.BPB_SecPerClus));
-
-    //bpbInfo.BPB_BytsPerSec[3] = '\0';
-
-    //fwrite(bpbInfo.BPB_SecPerClus, 1, sizeof(bpbInfo.BPB_SecPerClus), stdout);
-
-    //  lseek(pf, 14, SEEK_SET);
-    //  BPB_BytesPerSec = (unsigned char *)malloc(sizeof(unsigned char) * 1);
-
-    // int test = read(pf, BPB_BytesPerSec, 2);
-
-    // memcpy(&bpbInfo.BPB_RsvdSecCnt, BPB_BytesPerSec, sizeof(bpbInfo.BPB_RsvdSecCnt));
 
     setBPBInfo(pf);
-    displayBPBInfo();
-    clusterCount();
 
-    // printf("$ from struct %d\n", (bpbInfo.BPB_SecPerClus[0] * 2));
+    //displayBPBInfo();
 
-    // for (int i = 0; i < 1; i++)
-    // {
-    //     printf("%02x ", BPB_BytesPerSec[i]);
-    //     if ((i + 1) % 16 == 0)
-    //         printf("\n");
-    // }
     printf("\n");
-    // printf("$ 0x%s, %d", BPB_BytesPerSec, test);
+
+    printf("\n getFirstDataSectorForCluster : %d \n", utilityProps.firstDataSector);
+    unsigned int rootClusterOffset = getClusterOffset(2);
+
+    printf("\n rootCluster Offset : %d \n", rootClusterOffset);
+
+    listDataEntry(pf, rootClusterOffset);
 
     // while (strcmp(command[0], "exit"))
     // {
