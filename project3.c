@@ -22,9 +22,11 @@ struct DIRENTRY dirEntry;
 
 void setBPBInfo(int file)
 {
-    getFileData(file);
+    getFileData(utilityProps.file);
     displayBPBInfo();
     getFirstDataSectorForCluster();
+
+    utilityProps.currentCluster = bpbInfo.BPB_RootClus;
 }
 
 void getFileData(int file)
@@ -94,65 +96,7 @@ unsigned int getClusterOffset(int cluster)
     return byteOffset * bpbInfo.BPB_BytsPerSec;
 }
 
-void listDataEntry(int file, int clusterOffset)
-{
-
-    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERCLUSTER);
-
-    int nextDataEntry = 0;
-    int morefiles = 1;
-    while (morefiles != 0)
-    {
-
-        for (int i = 0; i < ENTRYPERCLUSTER; i++)
-        {
-            //seeking by data entry which is 32 bytes
-            lseek(file, clusterOffset + nextDataEntry, SEEK_SET);
-
-            read(file, info, BYTESPERCLUSTER);
-
-            memcpy(&dirEntry, info, sizeof(struct DIRENTRY));
-
-            dirEntry.DIR_name[11] = '\0';
-
-            // int test;
-            // memcpy(&test, &dirEntry.DIR_Attr, 1);
-
-            // printf("test %d \n", (unsigned int)dirEntry.DIR_Attr);
-
-            if (strcmp(dirEntry.DIR_name, "") != 0)
-            {
-                printf("DIR_name : %s \n", dirEntry.DIR_name);
-                printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
-                printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
-                printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
-                printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
-            }
-            else
-            {
-                break;
-            }
-
-            printf("\n");
-            nextDataEntry += BYTESPERCLUSTER;
-        }
-
-        // checking if the cluster has any other associated with it
-        // we will have to check the fat table for the next offset
-        if (nextDataEntry == bpbInfo.BPB_BytsPerSec)
-        {
-            //printf("\n clusterOffset %u \n", clusterOffset);
-            unsigned int fatOffset = getFatOffset(435);
-            printf("\nfatOffset %u \n", fatOffset);
-            clusterOffset = getFatValueAtOffset(file, fatOffset);
-        }
-        else
-        {
-            morefiles = 0;
-        }
-    }
-}
-
+//get the value of the next cluster from the FAT
 unsigned int getFatValueAtOffset(int file, unsigned int offset)
 {
 
@@ -168,5 +112,92 @@ unsigned int getFatValueAtOffset(int file, unsigned int offset)
 
     printf("\n fatValueOffset %u \n", fatValueOffset);
 
-    return getClusterOffset(fatValueOffset);
+    return fatValueOffset;
+}
+
+/**
+ * ls functions
+*/
+void lsCommand(struct CommandList *commandList)
+{
+    //utilityProps.currentCluster = 435; // using as a trigger to test each directory
+    unsigned int bytesCount = -1;
+
+    if (commandList->length < 2)
+    {
+        unsigned int nextCluster = utilityProps.currentCluster;
+        unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
+
+        printf("\n cluster Offset : %d \n", clusterOffset);
+
+        bytesCount = listDataEntry(clusterOffset);
+
+        //use to find each file of a cluster
+        while (bytesCount == bpbInfo.BPB_BytsPerSec || bytesCount == -1)
+        {
+            nextCluster = traverseCluster(nextCluster, &bytesCount);
+        }
+    }
+}
+
+unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
+{
+
+    unsigned int nextCluster;
+    unsigned int clusterOffset;
+
+    //if (nextCluster != utilityProps.currentCluster)
+    //{
+    //getting the FAT offset
+    unsigned int fatOffset = getFatOffset(cluster);
+    printf("\nfatOffset %u \n", fatOffset);
+
+    //get the value of the next cluster from the FAT
+    nextCluster = getFatValueAtOffset(utilityProps.file, fatOffset);
+    // }
+
+    //getting the offset of the cluster
+    clusterOffset = getClusterOffset(nextCluster);
+
+    //reading the cluster
+    (*bytesCount) = listDataEntry(clusterOffset);
+
+    return nextCluster;
+}
+
+int listDataEntry(int clusterOffset)
+{
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERCLUSTER);
+
+    int nextDataEntry = 0;
+
+    for (int i = 0; i < ENTRYPERCLUSTER; i++)
+    {
+        //seeking by data entry which is 32 bytes
+        lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
+
+        read(utilityProps.file, info, BYTESPERCLUSTER);
+
+        memcpy(&dirEntry, info, sizeof(struct DIRENTRY));
+
+        dirEntry.DIR_name[11] = '\0';
+
+        if (strcmp(dirEntry.DIR_name, "") != 0)
+        {
+            printf("DIR_name : %s \n", dirEntry.DIR_name);
+            // printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
+            // printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
+            // printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
+            // printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
+        }
+        else
+        {
+            break;
+        }
+
+        printf("\n");
+        nextDataEntry += BYTESPERCLUSTER;
+    }
+
+    return nextDataEntry;
 }

@@ -17,6 +17,13 @@ typedef enum
     true
 } boolean;
 
+//use to store the commands and it parms (tokens)
+struct CommandList
+{
+    int length;
+    char **commands;
+};
+
 struct BPBInfo
 {
     //offset 11
@@ -90,11 +97,12 @@ struct DIRENTRY
 
 struct UtilityProps
 {
-
+    int file;
     unsigned int rootDirSectors;
     unsigned int dataSec;
     unsigned int countOfClusters;
     unsigned int firstDataSector;
+    unsigned int currentCluster;
 };
 
 //variables
@@ -102,6 +110,10 @@ struct UtilityProps utilityProps;
 
 struct BPBInfo bpbInfo;
 struct DIRENTRY dirEntry;
+
+int file;
+
+//functions
 
 void setBPBInfo(int file);
 
@@ -119,6 +131,15 @@ int getFirstDataSectorForCluster();
 
 unsigned int getClusterOffset(int cluster);
 
-void listDataEntry(int file, int clusterOffset);
-
 unsigned int getFatValueAtOffset(int file, unsigned int offset);
+
+/**
+ * commands handler
+*/
+
+//ls commands
+void lsCommand(struct CommandList *CommandList);
+
+int listDataEntry(int clusterOffset);
+
+unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount);

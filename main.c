@@ -20,20 +20,12 @@ struct CommandList *new_commandList(void);
 //get user input
 char *getInput(void);
 
-//use to store the commands and it parms (tokens)
-struct CommandList
-{
-    int length;
-    char **commands;
-};
-
 int main(int argc, char **argv)
 {
 
     char *commands;
     unsigned char *BPB_BytesPerSec;
 
-    int file;
     boolean stop = false;
 
     if (argv[1] == NULL)
@@ -42,9 +34,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    file = getFile(argv[1]);
+    utilityProps.file = getFile(argv[1]);
 
-    setBPBInfo(file);
+    setBPBInfo(utilityProps.file);
 
     do
     {
@@ -67,6 +59,7 @@ int main(int argc, char **argv)
         }
         else if (strcmp(commandList->commands[0], "ls") == 0)
         {
+            lsCommand(commandList);
         }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
@@ -80,7 +73,7 @@ int main(int argc, char **argv)
 
     } while (stop != true);
 
-    close(file);
+    close(utilityProps.file);
 
     return 0;
 }
