@@ -5,17 +5,27 @@
 #include <fcntl.h>
 #include "project3.h"
 
-void getCommands(char **commands, char command_string[]);
+struct CommandList *getCommands(char *userInput);
+int getFile(char *filePath);
+void add_command(struct CommandList *commandList, char *item);
+struct CommandList *new_commandList(void);
+
+struct CommandList
+{
+    int length;
+    char **commands;
+};
 
 int main(int argc, char **argv)
 {
 
     char command[100];
-    char baseCommand[100];
+
     char **commands;
     unsigned char *BPB_BytesPerSec;
 
-    int pf;
+    int file;
+    boolean stop = false;
 
     if (argv[1] == NULL)
     {
@@ -23,53 +33,94 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    pf = open(argv[1], O_RDWR);
+    file = getFile(argv[1]);
 
-    if (pf == -1)
+    setBPBInfo(file);
+
+    do
     {
-        fprintf(stderr, "File doesn't exit\n");
-        return -1;
-    }
+        struct CommandList *commandList = new_commandList();
 
-    setBPBInfo(pf);
+        // printf("\n$ ");
 
-    //displayBPBInfo();
+        scanf("$  %s", command);
 
-    printf("\n");
+        //printf("********** %s", command);
 
-    printf("\n getFirstDataSectorForCluster : %d \n", utilityProps.firstDataSector);
-    unsigned int rootClusterOffset = getClusterOffset(2);
+        commandList = getCommands(command);
 
-    printf("\n rootCluster Offset : %d \n", rootClusterOffset);
+        // printf("%u", sizeof(command));
+        printf("%d", commandList->length);
 
-    listDataEntry(pf, rootClusterOffset);
+        if (strcmp(command, "info") == 0)
+        {
+        }
+        else if (strcmp(command, "ls") == 0)
+        {
+        }
+        else if (strcmp(command, "exit") == 0)
+        {
+            stop = false;
+            break;
+        }
 
-    // while (strcmp(command[0], "exit"))
-    // {
+    } while (stop != true);
 
-    //     printf("$ ");
-    //     scanf("%s", command);
-
-    //     //getCommands(commands,);
-
-    //     if (strcmp(command, "info") == 0)
-    //     {
-    //     }
-    //     else if (strcmp(command, "ls") == 0)
-    //     {
-    //     }
-    //     else if (strcmp(command, "exit") == 0)
-    //     {
-
-    //         _testexit();
-    //     }
-    // }
-
-    close(pf);
+    close(file);
 
     return 0;
 }
 
-void getCommands(char **commands, char command_string[])
+int getFile(char *filePath)
 {
+    int file = open(filePath, O_RDWR);
+
+    if (file == -1)
+    {
+        fprintf(stderr, "File doesn't exit\n");
+        exit(0);
+    }
+
+    return file;
+}
+
+struct CommandList *getCommands(char *userInput)
+{
+    struct CommandList *commandList = new_commandList();
+    int count = 0;
+
+    // userInput = strtok(NULL, " ");
+
+    while (userInput != NULL)
+    {
+
+        add_command(commandList, userInput);
+        userInput = strtok(NULL, " ");
+
+        // printf("---%s\n", userInput);
+    }
+    //commandList.length = count;
+
+    return commandList;
+}
+
+void add_command(struct CommandList *commandList, char *item)
+{
+    printf("\n^^^^\n");
+    int i = commandList->length;
+    commandList->commands = (char **)realloc(commandList->commands, (i + 2) * sizeof(char *));
+    commandList->commands[i] = (char *)malloc(strlen(item) + 1);
+    commandList->commands[i + 1] = NULL;
+    strcpy(commandList->commands[i], item);
+
+    commandList->length += 1;
+}
+
+struct CommandList *new_commandList(void)
+{
+    struct CommandList *commandList = (struct CommandList *)malloc(sizeof(struct CommandList));
+    commandList->length = 0;
+    commandList->commands = (char **)malloc(sizeof(char *));
+    commandList->commands[0] = NULL; /* make NULL terminated */
+    return commandList;
 }

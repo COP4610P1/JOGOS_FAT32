@@ -2,6 +2,20 @@
 
 #define BYTESPERCLUSTER 32
 #define ENTRYPERCLUSTER 16
+#define ENTRYPERCLUSTER 16
+
+#define ATTR_READ_ONLY 01
+#define ATTR_HIDDEN 02
+#define ATTR_SYSTEM 04
+#define ATTR_VOLUME_ID 08
+#define ATTR_DIRECTORY 16
+#define ATTR_ARCHIVE 32
+
+typedef enum
+{
+    false,
+    true
+} boolean;
 
 struct BPBInfo
 {
@@ -49,16 +63,27 @@ struct BPBInfo
 struct DIRENTRY
 {
     unsigned char DIR_name[11];
-    unsigned char DIR_Attributes;
+
+    unsigned char DIR_Attr;
+
     unsigned char DIR_NTRes;
+
     unsigned char DIR_CrtTimeTenth;
+
     unsigned short DIR_CrtTime;
+
     unsigned short DIR_CrtDate;
+
     unsigned short DIR_LstAccDate;
+
     unsigned short DIR_FstClusHI;
+
     unsigned short DIR_WrtTime;
+
     unsigned short DIR_WrtDate;
+
     unsigned short DIR_FstClusLO;
+
     unsigned int DIR_FileSize;
 
 } __attribute__((packed));
@@ -95,3 +120,5 @@ int getFirstDataSectorForCluster();
 unsigned int getClusterOffset(int cluster);
 
 void listDataEntry(int file, int clusterOffset);
+
+unsigned int getFatValueAtOffset(int file, unsigned int offset);

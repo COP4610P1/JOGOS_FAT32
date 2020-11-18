@@ -9,75 +9,205 @@ BPB_TotSec32 : 131072
 BPB_RootClus : 2 
 BPB_FATSz32 : 1009 
 
-****getting cluster count****
-rootDirSectors count : 0 
-dataSec count : 129022 
-countOfClusters count : 129022 
 
  getFirstDataSectorForCluster : 2050 
 
  rootCluster Offset : 1049600 
-DIR_name : Al 
+
+ greenClusterOffset Offset : 1271296 
+DIR_name : .           
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 435 
+DIR_FstClusHI : 0 
+
+DIR_name : ..          
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
+
+DIR_name : Af 
 DIR_FileSize : 4294967295 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
 
-DIR_name : LONGFILE    
-DIR_FileSize : 220022 
+DIR_name : F001        
+DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name : Ah 
+DIR_name : Af 
 DIR_FileSize : 4294967295 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
 
-DIR_name : HELLO       
-DIR_FileSize : 10 
+DIR_name : F002        
+DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name : Ab 
+DIR_name : Af 
 DIR_FileSize : 4294967295 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
 
-DIR_name : BLUE        
+DIR_name : F003        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name : Ag 
+DIR_name : Af 
 DIR_FileSize : 4294967295 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
 
-DIR_name : GREEN       
+DIR_name : F004        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name : Ar 
+DIR_name : Af 
 DIR_FileSize : 4294967295 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
 
-DIR_name : RED         
+DIR_name : F005        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F006        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F007        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+
+fatOffset 18124 
+
+ fatValueOffset 458 
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F016        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F017        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F018        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 
-DIR_name :  
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F019        
 DIR_FileSize : 0 
 DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
+
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F020        
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
+
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F021        
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
+
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F022        
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
+
+DIR_name : Af 
+DIR_FileSize : 4294967295 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 65535 
+
+DIR_name : F023        
+DIR_FileSize : 0 
+DIR_Attributes : 0 
+DIR_FstClusLO : 0 
+DIR_FstClusHI : 0 
 

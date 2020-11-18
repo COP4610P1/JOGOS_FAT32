@@ -23,6 +23,7 @@ struct DIRENTRY dirEntry;
 void setBPBInfo(int file)
 {
     getFileData(file);
+    displayBPBInfo();
     getFirstDataSectorForCluster();
 }
 
@@ -43,9 +44,9 @@ void displayBPBInfo()
 {
     printf("\n****basic info****\n");
     printf("BPB_BytsPerSec : %d \n", bpbInfo.BPB_BytsPerSec);
-    printf("BPB_SecPerClus : %d \n", (int)bpbInfo.BPB_SecPerClus);
+    printf("BPB_SecPerClus : %d \n", (unsigned int)bpbInfo.BPB_SecPerClus);
     printf("BPB_RsvdSecCnt : %d \n", bpbInfo.BPB_RsvdSecCnt);
-    printf("BPB_NumFATs : %d \n", (int)bpbInfo.BPB_NumFATs);
+    printf("BPB_NumFATs : %d \n", (unsigned int)bpbInfo.BPB_NumFATs);
     printf("BPB_RootEntCnt : %d \n", bpbInfo.BPB_RootEntCnt);
     printf("BPB_TotSec32 : %d \n", bpbInfo.BPB_TotSec32);
     printf("BPB_RootClus : %d \n", bpbInfo.BPB_RootClus);
@@ -64,16 +65,16 @@ void clusterCount()
 
     printf("\ndataSec count : %d ", utilityProps.dataSec);
 
-    utilityProps.countOfClusters = utilityProps.dataSec / (int)bpbInfo.BPB_SecPerClus;
+    utilityProps.countOfClusters = utilityProps.dataSec / (unsigned int)bpbInfo.BPB_SecPerClus;
 
     printf("\ncountOfClusters count : %d ", utilityProps.countOfClusters);
 }
 
 int getFatOffset(int cluster)
 {
-    return bpbInfo.BPB_RsvdSecCnt *
-               bpbInfo.BPB_BytsPerSec +
-           cluster * 4;
+    return (bpbInfo.BPB_RsvdSecCnt *
+            bpbInfo.BPB_BytsPerSec) +
+           (cluster * 4);
 }
 
 // reflect slide 13 in BPB commands
@@ -99,21 +100,73 @@ void listDataEntry(int file, int clusterOffset)
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERCLUSTER);
 
     int nextDataEntry = 0;
-
-    for (int i = 0; i < ENTRYPERCLUSTER; i++)
+    int morefiles = 1;
+    while (morefiles != 0)
     {
-        lseek(file, clusterOffset + nextDataEntry, SEEK_SET);
 
-        read(file, info, BYTESPERCLUSTER);
+        for (int i = 0; i < ENTRYPERCLUSTER; i++)
+        {
+            //seeking by data entry which is 32 bytes
+            lseek(file, clusterOffset + nextDataEntry, SEEK_SET);
 
-        memcpy(&dirEntry, info, sizeof(struct DIRENTRY));
-        dirEntry.DIR_name[11] = '\0';
+            read(file, info, BYTESPERCLUSTER);
 
-        printf("DIR_name : %s \n", dirEntry.DIR_name);
-        printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
-        printf("DIR_Attributes : %u \n", (unsigned int)dirEntry.DIR_Attributes);
+            memcpy(&dirEntry, info, sizeof(struct DIRENTRY));
 
-        printf("\n");
-        nextDataEntry += BYTESPERCLUSTER;
+            dirEntry.DIR_name[11] = '\0';
+
+            // int test;
+            // memcpy(&test, &dirEntry.DIR_Attr, 1);
+
+            // printf("test %d \n", (unsigned int)dirEntry.DIR_Attr);
+
+            if (strcmp(dirEntry.DIR_name, "") != 0)
+            {
+                printf("DIR_name : %s \n", dirEntry.DIR_name);
+                printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
+                printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
+                printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
+                printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
+            }
+            else
+            {
+                break;
+            }
+
+            printf("\n");
+            nextDataEntry += BYTESPERCLUSTER;
+        }
+
+        // checking if the cluster has any other associated with it
+        // we will have to check the fat table for the next offset
+        if (nextDataEntry == bpbInfo.BPB_BytsPerSec)
+        {
+            //printf("\n clusterOffset %u \n", clusterOffset);
+            unsigned int fatOffset = getFatOffset(435);
+            printf("\nfatOffset %u \n", fatOffset);
+            clusterOffset = getFatValueAtOffset(file, fatOffset);
+        }
+        else
+        {
+            morefiles = 0;
+        }
     }
+}
+
+unsigned int getFatValueAtOffset(int file, unsigned int offset)
+{
+
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * 4);
+
+    unsigned int fatValueOffset;
+
+    lseek(file, offset, SEEK_SET);
+
+    read(file, info, 4);
+
+    memcpy(&fatValueOffset, info, sizeof(int));
+
+    printf("\n fatValueOffset %u \n", fatValueOffset);
+
+    return getClusterOffset(fatValueOffset);
 }
