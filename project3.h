@@ -3,6 +3,7 @@
 #define BYTESPERCLUSTER 32
 #define ENTRYPERCLUSTER 16
 #define ENTRYPERCLUSTER 16
+#define ENDOFCLUSTER 268435448 // 0FFFFFF8
 
 #define ATTR_READ_ONLY 01
 #define ATTR_HIDDEN 02
@@ -67,7 +68,7 @@ struct BPBInfo
 
 } __attribute__((packed));
 
-struct DIRENTRY
+struct DirEntry
 {
     unsigned char DIR_name[11];
 
@@ -109,7 +110,7 @@ struct UtilityProps
 struct UtilityProps utilityProps;
 
 struct BPBInfo bpbInfo;
-struct DIRENTRY dirEntry;
+struct DirEntry dirEntry;
 
 int file;
 
@@ -133,6 +134,9 @@ unsigned int getClusterOffset(int cluster);
 
 unsigned int getFatValueAtOffset(int file, unsigned int offset);
 
+//search for entry
+struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext);
+
 /**
  * commands handler
 */
@@ -140,6 +144,9 @@ unsigned int getFatValueAtOffset(int file, unsigned int offset);
 //ls commands
 void lsCommand(struct CommandList *CommandList);
 
-int listDataEntry(int clusterOffset);
+int listDataEntry(unsigned int clusterOffset);
 
 unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount);
+
+//info command
+void infoCommand();
