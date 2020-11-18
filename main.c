@@ -5,11 +5,22 @@
 #include <fcntl.h>
 #include "project3.h"
 
+// get each token from user input
 struct CommandList *getCommands(char *userInput);
+
+//reads the file
 int getFile(char *filePath);
+
+//add token to command list
 void add_command(struct CommandList *commandList, char *item);
+
+//create  memory for the command list
 struct CommandList *new_commandList(void);
 
+//get user input
+char *getInput(void);
+
+//use to store the commands and it parms (tokens)
 struct CommandList
 {
     int length;
@@ -19,9 +30,7 @@ struct CommandList
 int main(int argc, char **argv)
 {
 
-    char command[100];
-
-    char **commands;
+    char *commands;
     unsigned char *BPB_BytesPerSec;
 
     int file;
@@ -41,27 +50,32 @@ int main(int argc, char **argv)
     {
         struct CommandList *commandList = new_commandList();
 
-        // printf("\n$ ");
+        printf("\n$ ");
 
-        scanf("$  %s", command);
+        //get user input
+        char *userInput = getInput();
 
-        //printf("********** %s", command);
+        commandList = getCommands(userInput);
 
-        commandList = getCommands(command);
+        //printf("%d", commandList->length);
+        // printf("commands  :   %s", commands);
 
-        // printf("%u", sizeof(command));
-        printf("%d", commandList->length);
+        // printf("commands 2 :   %s", commandList->commands[0]);
 
-        if (strcmp(command, "info") == 0)
+        if (strcmp(commandList->commands[0], "info") == 0)
         {
         }
-        else if (strcmp(command, "ls") == 0)
+        else if (strcmp(commandList->commands[0], "ls") == 0)
         {
         }
-        else if (strcmp(command, "exit") == 0)
+        else if (strcmp(commandList->commands[0], "exit") == 0)
         {
             stop = false;
             break;
+        }
+        else
+        {
+            printf("\nERROR : Unknown command: %s", userInput);
         }
 
     } while (stop != true);
@@ -84,29 +98,43 @@ int getFile(char *filePath)
     return file;
 }
 
+/**
+ * getting each command entered from the user
+*/
 struct CommandList *getCommands(char *userInput)
 {
+
+    // allocating memor for list
     struct CommandList *commandList = new_commandList();
-    int count = 0;
 
-    // userInput = strtok(NULL, " ");
+    //buffer for traversing the user input
+    char *buf = (char *)malloc(strlen(userInput) + 1);
 
-    while (userInput != NULL)
+    strcpy(buf, userInput);
+
+    // storing each token from user input to add to the commands list
+    char *item = strtok(buf, " ");
+
+    // loops until all token is taken from buf and stored.
+    while (item != NULL)
     {
-
-        add_command(commandList, userInput);
-        userInput = strtok(NULL, " ");
-
-        // printf("---%s\n", userInput);
+        //adding token to the command list
+        add_command(commandList, item);
+        item = strtok(NULL, " ");
     }
-    //commandList.length = count;
+
+    //freeing buffer pointer variable
+    free(buf);
 
     return commandList;
 }
 
+/**
+ * adding a command to the list of commands entered.
+*/
 void add_command(struct CommandList *commandList, char *item)
 {
-    printf("\n^^^^\n");
+
     int i = commandList->length;
     commandList->commands = (char **)realloc(commandList->commands, (i + 2) * sizeof(char *));
     commandList->commands[i] = (char *)malloc(strlen(item) + 1);
@@ -116,6 +144,9 @@ void add_command(struct CommandList *commandList, char *item)
     commandList->length += 1;
 }
 
+/*
+ * allocating memory the list of commands
+ */
 struct CommandList *new_commandList(void)
 {
     struct CommandList *commandList = (struct CommandList *)malloc(sizeof(struct CommandList));
@@ -123,4 +154,37 @@ struct CommandList *new_commandList(void)
     commandList->commands = (char **)malloc(sizeof(char *));
     commandList->commands[0] = NULL; /* make NULL terminated */
     return commandList;
+}
+
+/**
+ * get input from user 
+ * code from first project 
+*/
+char *getInput(void)
+{
+    char *buffer = NULL;
+    int bufsize = 0;
+
+    char line[5];
+    while (fgets(line, 5, stdin) != NULL)
+    {
+        int addby = 0;
+        char *newln = strchr(line, '\n');
+        if (newln != NULL)
+            addby = newln - line;
+        else
+            addby = 5 - 1;
+
+        buffer = (char *)realloc(buffer, bufsize + addby);
+        memcpy(&buffer[bufsize], line, addby);
+        bufsize += addby;
+
+        if (newln != NULL)
+            break;
+    }
+
+    buffer = (char *)realloc(buffer, bufsize + 1);
+    buffer[bufsize] = 0;
+
+    return buffer;
 }
