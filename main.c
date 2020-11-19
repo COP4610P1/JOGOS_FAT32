@@ -49,11 +49,6 @@ int main(int argc, char **argv)
 
         commandList = getCommands(userInput);
 
-        //printf("%d", commandList->length);
-        // printf("commands  :   %s", commands);
-
-        // printf("commands 2 :   %s", commandList->commands[0]);
-
         if (strcmp(commandList->commands[0], "info") == 0)
         {
             infoCommand();
