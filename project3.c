@@ -24,30 +24,20 @@ void setBPBInfo(int file)
 */
 void lsCommand(struct CommandList *commandList)
 {
-    //utilityProps.currentCluster = 435; // using as a trigger to test each directory
+    // utilityProps.currentCluster = 435; // using as a trigger to test each directory
     unsigned int bytesCount = -1;
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
     unsigned int currentCluster = utilityProps.currentCluster;
+
     struct DirEntry *resultEntry;
 
     if (commandList->length < 2)
     {
-
-        // printf("\n cluster Offset : %d \n", clusterOffset);
-
         bytesCount = listDataEntry(clusterOffset);
-
-        //use to find each file of a cluster
-        //runs until the bytescount is not equal to 512
-        while (bytesCount == bpbInfo.BPB_BytsPerSec || bytesCount == -1)
-        {
-            currentCluster = traverseCluster(currentCluster, &bytesCount);
-        }
+        currentCluster = traverseCluster(currentCluster, &bytesCount);
     }
     else if (commandList->length == 2)
     {
-        //resultEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
-
         resultEntry = searchSector(clusterOffset, commandList->commands[1], &bytesCount);
 
         while ((bytesCount == bpbInfo.BPB_BytsPerSec || bytesCount == -1))
@@ -60,11 +50,10 @@ void lsCommand(struct CommandList *commandList)
 
         if (resultEntry != NULL)
         {
-            //printf("here");
+
             currentCluster = (resultEntry->DIR_FstClusLO > resultEntry->DIR_FstClusHI)
                                  ? resultEntry->DIR_FstClusLO
                                  : resultEntry->DIR_FstClusHI;
-            printf("\ncurrentCluser %u \n", currentCluster);
 
             if (currentCluster == 0)
             {
@@ -74,11 +63,7 @@ void lsCommand(struct CommandList *commandList)
             {
 
                 bytesCount = listDataEntry(getClusterOffset(currentCluster));
-
-                while (bytesCount == bpbInfo.BPB_BytsPerSec || bytesCount == -1)
-                {
-                    currentCluster = traverseCluster(currentCluster, &bytesCount);
-                }
+                currentCluster = traverseCluster(currentCluster, &bytesCount);
             }
         }
         else
@@ -108,6 +93,74 @@ void infoCommand()
     printf("Root Cluster  : %u \n", bpbInfo.BPB_RootClus);
 }
 
+/**
+ * size command
+*/
+
+void sizeCommand(struct CommandList *commandList)
+{
+
+    unsigned int bytesCount;
+    unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
+    unsigned int currentCluster = utilityProps.currentCluster;
+
+    struct DirEntry *resultEntry = searchSector(clusterOffset, commandList->commands[1], &bytesCount);
+
+    while ((bytesCount == bpbInfo.BPB_BytsPerSec))
+    {
+
+        currentCluster = getNextCluseterOffset(currentCluster);
+        resultEntry = searchSector(getClusterOffset(currentCluster),
+                                   commandList->commands[1], &bytesCount);
+    }
+
+    if (resultEntry != NULL)
+    {
+        printf("%u", resultEntry->DIR_FileSize);
+    }
+    else
+    {
+        printf("ERROR: File doesn't exits");
+    }
+}
+
+/**
+ * cd command
+*/
+
+void cdCommand(struct CommandList *commandList)
+{
+    unsigned int bytesCount;
+    unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
+    unsigned int currentCluster = utilityProps.currentCluster;
+
+    struct DirEntry *resultEntry = searchSector(clusterOffset, commandList->commands[1], &bytesCount);
+
+    while ((bytesCount == bpbInfo.BPB_BytsPerSec))
+    {
+
+        currentCluster = getNextCluseterOffset(currentCluster);
+        resultEntry = searchSector(getClusterOffset(currentCluster),
+                                   commandList->commands[1], &bytesCount);
+    }
+
+    if (resultEntry != NULL)
+    {
+        currentCluster = (resultEntry->DIR_FstClusLO > resultEntry->DIR_FstClusHI)
+                             ? resultEntry->DIR_FstClusLO
+                             : resultEntry->DIR_FstClusHI;
+        printf("%u", currentCluster);
+        if (currentCluster != 0)
+        {
+
+            utilityProps.currentCluster = currentCluster;
+        }
+    }
+    else
+    {
+        printf("ERROR: File doesn't exits");
+    }
+}
 /**
  * others
 */

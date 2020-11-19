@@ -127,26 +127,30 @@ struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsig
 
 unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
 {
-
-    unsigned int nextCluster = getNextCluseterOffset(cluster);
+    unsigned int nextCluster = cluster;
     unsigned int clusterOffset;
 
-    //printf("nextcluster : %u", nextCluster);
+    //use to find each file of a cluster
+    //runs until the bytescount is not equal to 512
+    while ((*bytesCount) == bpbInfo.BPB_BytsPerSec || (*bytesCount) == -1)
+    {
+        nextCluster = getNextCluseterOffset(nextCluster);
 
-    /*
+        /*
     * check to see if the FAT table says the end of cluster
     * has been reahced.
     */
-    if (nextCluster >= ENDOFCLUSTER)
-    {
-        return -2; // -2 will stop the while loop
+        if (nextCluster >= ENDOFCLUSTER)
+        {
+            return -2; // -2 will stop the while loop
+        }
+
+        //getting the offset of the cluster
+        clusterOffset = getClusterOffset(nextCluster);
+
+        //reading the cluster
+        (*bytesCount) = listDataEntry(clusterOffset);
     }
-
-    //getting the offset of the cluster
-    clusterOffset = getClusterOffset(nextCluster);
-
-    //reading the cluster
-    (*bytesCount) = listDataEntry(clusterOffset);
 
     return nextCluster;
 }

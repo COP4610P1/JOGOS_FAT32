@@ -61,4 +61,10 @@ void lsCommand(struct CommandList *CommandList);
 //info command
 void infoCommand();
 
+//size command
+void sizeCommand(struct CommandList *commandList);
+
+//cd command
+void cdCommand(struct CommandList *commandList);
+
 #endif

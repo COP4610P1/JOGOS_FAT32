@@ -59,7 +59,11 @@ int main(int argc, char **argv)
         }
         else if (strcmp(commandList->commands[0], "size") == 0)
         {
-            lsCommand(commandList);
+            sizeCommand(commandList);
+        }
+        else if (strcmp(commandList->commands[0], "cd") == 0)
+        {
+            cdCommand(commandList);
         }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
