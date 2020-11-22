@@ -58,7 +58,7 @@ unsigned int getFatValueAtOffset(unsigned int offset)
 }
 
 //get the next cluster
-unsigned int getNextCluseterOffset(unsigned int cluster)
+unsigned int getNextCluster(unsigned int cluster)
 {
     unsigned int nextCluster;
     unsigned int clusterOffset;
@@ -125,6 +125,10 @@ struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsig
     return resultEntry;
 }
 
+/**
+ * traversing to the different cluster by
+ * going to the FAT table
+*/
 unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
 {
     unsigned int nextCluster = cluster;
@@ -134,7 +138,7 @@ unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
     //runs until the bytescount is not equal to 512
     while ((*bytesCount) == bpbInfo.BPB_BytsPerSec || (*bytesCount) == -1)
     {
-        nextCluster = getNextCluseterOffset(nextCluster);
+        nextCluster = getNextCluster(nextCluster);
 
         /*
     * check to see if the FAT table says the end of cluster

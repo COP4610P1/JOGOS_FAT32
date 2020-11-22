@@ -67,4 +67,7 @@ void sizeCommand(struct CommandList *commandList);
 //cd command
 void cdCommand(struct CommandList *commandList);
 
+//creat command
+void creatCommand(struct CommandList *commandList);
+
 #endif

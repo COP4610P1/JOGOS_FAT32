@@ -65,6 +65,10 @@ int main(int argc, char **argv)
         {
             cdCommand(commandList);
         }
+        else if (strcmp(commandList->commands[0], "creat") == 0)
+        {
+            creatCommand(commandList);
+        }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
             stop = false;

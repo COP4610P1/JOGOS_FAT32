@@ -93,7 +93,7 @@ int getFirstDataSectorForCluster();
 unsigned int getClusterOffset(int cluster);
 
 unsigned int getFatValueAtOffset(unsigned int offset);
-unsigned int getNextCluseterOffset(unsigned int cluster);
+unsigned int getNextCluster(unsigned int cluster);
 
 //search for entry
 struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsigned int *bytesCount);

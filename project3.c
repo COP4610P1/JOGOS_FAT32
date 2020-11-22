@@ -43,7 +43,7 @@ void lsCommand(struct CommandList *commandList)
         while ((bytesCount == bpbInfo.BPB_BytsPerSec || bytesCount == -1))
         {
 
-            currentCluster = getNextCluseterOffset(currentCluster);
+            currentCluster = getNextCluster(currentCluster);
             resultEntry = searchSector(getClusterOffset(currentCluster),
                                        commandList->commands[1], &bytesCount);
         }
@@ -109,7 +109,7 @@ void sizeCommand(struct CommandList *commandList)
     while ((bytesCount == bpbInfo.BPB_BytsPerSec))
     {
 
-        currentCluster = getNextCluseterOffset(currentCluster);
+        currentCluster = getNextCluster(currentCluster);
         resultEntry = searchSector(getClusterOffset(currentCluster),
                                    commandList->commands[1], &bytesCount);
     }
@@ -131,28 +131,31 @@ void sizeCommand(struct CommandList *commandList)
 void cdCommand(struct CommandList *commandList)
 {
     unsigned int bytesCount;
+    //get the current cluster offset(location) for the data
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
+
+    //using the currentCluster property to traverse to each cluster
     unsigned int currentCluster = utilityProps.currentCluster;
 
     struct DirEntry *resultEntry = searchSector(clusterOffset, commandList->commands[1], &bytesCount);
 
+    //searching the different clusters for a specific entry
     while ((bytesCount == bpbInfo.BPB_BytsPerSec))
     {
-
-        currentCluster = getNextCluseterOffset(currentCluster);
+        currentCluster = getNextCluster(currentCluster);
         resultEntry = searchSector(getClusterOffset(currentCluster),
                                    commandList->commands[1], &bytesCount);
     }
 
     if (resultEntry != NULL)
     {
+        //the cluster associated with the directory
         currentCluster = (resultEntry->DIR_FstClusLO > resultEntry->DIR_FstClusHI)
                              ? resultEntry->DIR_FstClusLO
                              : resultEntry->DIR_FstClusHI;
-        printf("%u", currentCluster);
+        // printf("%u", currentCluster);
         if (currentCluster != 0)
         {
-
             utilityProps.currentCluster = currentCluster;
         }
     }
@@ -161,10 +164,26 @@ void cdCommand(struct CommandList *commandList)
         printf("ERROR: File doesn't exits");
     }
 }
+
+void creatCommand(struct CommandList *commandList)
+{
+    utilityProps.currentCluster = 435;
+    struct DirEntry *newDirEntry;
+    unsigned int fatValue = getNextCluster(utilityProps.currentCluster);
+    char test[8] = "FFFFFFFF";
+
+    //printf("\n FAT Value : %u", fatValue);
+    while (fatValue < ENDOFCLUSTER)
+    {
+        printf("\n FAT Value : %u", fatValue);
+        fatValue = getNextCluster(fatValue);
+    }
+}
 /**
  * others
 */
 
+//get the data from the file
 void getFileData(int file)
 {
     unsigned char *info;
@@ -178,6 +197,7 @@ void getFileData(int file)
     memcpy(&bpbInfo, info, sizeof(struct BPBInfo));
 }
 
+//trim a string of spaces
 void trimString(unsigned char *str)
 {
     int count = 0;
