@@ -7,6 +7,7 @@
 #define ENTRYPERCLUSTER 16
 #define ENTRYPERCLUSTER 16
 #define ENDOFCLUSTER 268435448 // 0FFFFFF8
+#define NEWCLUSTER 4294967295  //FFFFFFFF
 
 #define ATTR_READ_ONLY 01
 #define ATTR_HIDDEN 02
@@ -100,6 +101,10 @@ struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsig
 
 int listDataEntry(unsigned int clusterOffset);
 
-unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount);
+unsigned int displayCluster(unsigned int cluster, unsigned int *bytesCount);
+
+unsigned int traverseFAT();
+
+unsigned int traverseCluster(unsigned int clusterOffset);
 
 #endif

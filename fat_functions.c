@@ -129,7 +129,7 @@ struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsig
  * traversing to the different cluster by
  * going to the FAT table
 */
-unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
+unsigned int displayCluster(unsigned int cluster, unsigned int *bytesCount)
 {
     unsigned int nextCluster = cluster;
     unsigned int clusterOffset;
@@ -157,6 +157,36 @@ unsigned int traverseCluster(unsigned int cluster, unsigned int *bytesCount)
     }
 
     return nextCluster;
+}
+
+unsigned int traverseCluster(unsigned int clusterOffset)
+{
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
+
+    int nextDataEntry = 0;
+
+    for (int i = 0; i < ENTRYPERCLUSTER; i++)
+    {
+        //seeking by data entry which is 32 bytes
+        clusterOffset += nextDataEntry;
+        lseek(utilityProps.file, clusterOffset, SEEK_SET);
+
+        read(utilityProps.file, info, BYTESPERENTRY);
+
+        memcpy(&dirEntry, info, sizeof(struct DirEntry));
+
+        // dirEntry.DIR_name[11] = '\0';
+
+        if (strcmp(dirEntry.DIR_name, "") == 0)
+        {
+            break;
+        }
+
+        //setting the next offset to look at
+        nextDataEntry += BYTESPERENTRY;
+    }
+
+    return clusterOffset;
 }
 
 //listing  cluster entries
@@ -190,8 +220,46 @@ int listDataEntry(unsigned int clusterOffset)
         {
             break;
         }
+        //setting the next offset to look at
         nextDataEntry += BYTESPERENTRY;
     }
 
     return nextDataEntry;
+}
+
+unsigned int traverseFAT()
+{
+
+    unsigned int lastFATValue = 2;
+
+    //get the offset/location of the root
+    unsigned int fatOffset = getFatOffset(lastFATValue);
+    printf("offset  %u", fatOffset);
+
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
+
+    //traversing through the  FAT
+    for (int i = 0; i < bpbInfo.BPB_FATSz32; i++)
+    {
+
+        lseek(utilityProps.file, fatOffset, SEEK_SET);
+
+        read(utilityProps.file, info, sizeof(lastFATValue));
+
+        memcpy(&lastFATValue, info, sizeof(lastFATValue));
+
+        if (lastFATValue == 0)
+        {
+            printf("\n %x \n", lastFATValue);
+
+            printf("offset  %u", fatOffset);
+            break;
+        }
+        else
+        {
+            fatOffset += 4;
+        }
+    }
+
+    return fatOffset;
 }

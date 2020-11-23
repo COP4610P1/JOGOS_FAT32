@@ -34,7 +34,7 @@ void lsCommand(struct CommandList *commandList)
     if (commandList->length < 2)
     {
         bytesCount = listDataEntry(clusterOffset);
-        currentCluster = traverseCluster(currentCluster, &bytesCount);
+        currentCluster = displayCluster(currentCluster, &bytesCount);
     }
     else if (commandList->length == 2)
     {
@@ -63,7 +63,7 @@ void lsCommand(struct CommandList *commandList)
             {
 
                 bytesCount = listDataEntry(getClusterOffset(currentCluster));
-                currentCluster = traverseCluster(currentCluster, &bytesCount);
+                currentCluster = displayCluster(currentCluster, &bytesCount);
             }
         }
         else
@@ -167,17 +167,67 @@ void cdCommand(struct CommandList *commandList)
 
 void creatCommand(struct CommandList *commandList)
 {
-    utilityProps.currentCluster = 435;
-    struct DirEntry *newDirEntry;
-    unsigned int fatValue = getNextCluster(utilityProps.currentCluster);
-    char test[8] = "FFFFFFFF";
-
-    //printf("\n FAT Value : %u", fatValue);
-    while (fatValue < ENDOFCLUSTER)
+    if (commandList->commands[1] == NULL)
     {
-        printf("\n FAT Value : %u", fatValue);
-        fatValue = getNextCluster(fatValue);
+        printf("ERROR : enter a file name");
+        return;
     }
+
+    // utilityProps.currentCluster = 435;
+    // struct DirEntry *newDirEntry;
+    unsigned int nextCluster = utilityProps.currentCluster;
+    // //updating fat
+    // unsigned int emptyFATOffset = traverseFAT();
+    // lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
+    // unsigned int test = NEWCLUSTER;
+    // write(utilityProps.file, &test, 4);
+
+    //creating a new file
+    struct DirEntry *dirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
+
+    strcpy(dirEntry->DIR_name, commandList->commands[1]);
+    dirEntry->DIR_FileSize = 0;
+    dirEntry->DIR_FstClusHI = 0;
+    dirEntry->DIR_FstClusLO = 0;
+    dirEntry->DIR_Attr = 0;
+    dirEntry->DIR_NTRes = 0;
+    dirEntry->DIR_CrtTimeTenth = 0;
+    dirEntry->DIR_CrtTime = 0;
+    dirEntry->DIR_CrtDate = 0;
+    dirEntry->DIR_LstAccDate = 0;
+    dirEntry->DIR_WrtTime = 0;
+    dirEntry->DIR_WrtDate = 0;
+    
+    unsigned int storedClusterValue = getNextCluster(nextCluster);
+
+    printf("\n 1 FAT Value : %u", storedClusterValue);
+
+    if (storedClusterValue >= ENDOFCLUSTER)
+    {
+        storedClusterValue = nextCluster;
+    }
+    else
+    {
+        while (storedClusterValue < 0)
+        {
+            storedClusterValue = getNextCluster(storedClusterValue);
+        }
+    }
+
+    unsigned int storedClusterOffset = getClusterOffset(storedClusterValue);
+
+    printf("\n FAT Value : %u", storedClusterValue);
+
+    printf("\n Cluster Offset : %u", storedClusterOffset);
+    printf("\n Cluster Value : %u", utilityProps.currentCluster);
+
+    unsigned int saveSpotOffset = traverseCluster(storedClusterOffset);
+
+    printf("\n Entry Offset : %u", saveSpotOffset);
+
+    lseek(utilityProps.file, saveSpotOffset, SEEK_SET);
+
+    write(utilityProps.file, dirEntry, sizeof(struct DirEntry));
 }
 /**
  * others
