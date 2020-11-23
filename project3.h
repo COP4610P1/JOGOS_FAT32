@@ -70,4 +70,7 @@ void cdCommand(struct CommandList *commandList);
 //creat command
 void creatCommand(struct CommandList *commandList);
 
+//mkdir commnand
+void mkdirCommand(struct CommandList *commandList);
+
 #endif

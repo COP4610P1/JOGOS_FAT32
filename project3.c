@@ -197,7 +197,7 @@ void creatCommand(struct CommandList *commandList)
     dirEntry->DIR_LstAccDate = 0;
     dirEntry->DIR_WrtTime = 0;
     dirEntry->DIR_WrtDate = 0;
-    
+
     unsigned int storedClusterValue = getNextCluster(nextCluster);
 
     printf("\n 1 FAT Value : %u", storedClusterValue);
@@ -229,6 +229,78 @@ void creatCommand(struct CommandList *commandList)
 
     write(utilityProps.file, dirEntry, sizeof(struct DirEntry));
 }
+
+void mkdirCommand(struct CommandList *commandList)
+{
+  if (commandList->commands[1] == NULL)
+  {
+      printf("ERROR : enter a file name");
+      return;
+  }
+
+  // utilityProps.currentCluster = 435;
+  struct DirEntry *newDirEntry;
+  unsigned int nextCluster = utilityProps.currentCluster;
+  //updating fat
+  unsigned int newClusterValue;
+  unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
+
+  printf("newClusterValue: %u \n", newClusterValue);
+  printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+
+  lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
+  unsigned int test = NEWCLUSTER;
+  write(utilityProps.file, &test, 4);
+
+  //creating a new file
+  struct DirEntry *dirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
+
+  strcpy(dirEntry->DIR_name, commandList->commands[1]);
+  dirEntry->DIR_FileSize = 0;
+  dirEntry->DIR_FstClusHI = newClusterValue;
+  dirEntry->DIR_FstClusLO = 0;
+  dirEntry->DIR_Attr = 16;
+  dirEntry->DIR_NTRes = 0;
+  dirEntry->DIR_CrtTimeTenth = 0;
+  dirEntry->DIR_CrtTime = 0;
+  dirEntry->DIR_CrtDate = 0;
+  dirEntry->DIR_LstAccDate = 0;
+  dirEntry->DIR_WrtTime = 0;
+  dirEntry->DIR_WrtDate = 0;
+
+  unsigned int storedClusterValue = getNextCluster(nextCluster);
+
+  printf("\n 1 FAT Value : %u", storedClusterValue);
+
+  if (storedClusterValue >= ENDOFCLUSTER)
+  {
+      storedClusterValue = nextCluster;
+  }
+  else
+  {
+      while (storedClusterValue < 0)
+      {
+          storedClusterValue = getNextCluster(storedClusterValue);
+      }
+  }
+
+  unsigned int storedClusterOffset = getClusterOffset(storedClusterValue);
+
+  printf("\n FAT Value : %u", storedClusterValue);
+
+  printf("\n Cluster Offset : %u", storedClusterOffset);
+  printf("\n Cluster Value : %u", utilityProps.currentCluster);
+
+  unsigned int saveSpotOffset = traverseCluster(storedClusterOffset);
+
+  printf("\n Entry Offset : %u", saveSpotOffset);
+
+  lseek(utilityProps.file, saveSpotOffset, SEEK_SET);
+
+  write(utilityProps.file, dirEntry, sizeof(struct DirEntry));
+
+}
+
 /**
  * others
 */

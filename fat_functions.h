@@ -103,7 +103,7 @@ int listDataEntry(unsigned int clusterOffset);
 
 unsigned int displayCluster(unsigned int cluster, unsigned int *bytesCount);
 
-unsigned int traverseFAT();
+unsigned int traverseFAT(unsigned int *newClusterValue);
 
 unsigned int traverseCluster(unsigned int clusterOffset);
 

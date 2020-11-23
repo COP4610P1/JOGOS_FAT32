@@ -69,6 +69,10 @@ int main(int argc, char **argv)
         {
             creatCommand(commandList);
         }
+        else if (strcmp(commandList->commands[0], "mkdir") == 0)
+        {
+            mkdirCommand(commandList);
+        }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
             stop = false;
@@ -158,8 +162,8 @@ struct CommandList *new_commandList(void)
 }
 
 /**
- * get input from user 
- * code from first project 
+ * get input from user
+ * code from first project
 */
 char *getInput(void)
 {

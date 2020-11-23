@@ -1,10 +1,10 @@
 /**
  * There is only one sector per cluster
  *  each cluster/sector has data at the root
- * each data entry is 32 byte 
+ * each data entry is 32 byte
  * each cluster is 512 byte
- * 512/32 = 16 bytes 
- * root cluster is cluster 2 
+ * 512/32 = 16 bytes
+ * root cluster is cluster 2
  */
 
 #include <stdio.h>
@@ -168,25 +168,35 @@ unsigned int traverseCluster(unsigned int clusterOffset)
     for (int i = 0; i < ENTRYPERCLUSTER; i++)
     {
         //seeking by data entry which is 32 bytes
-        clusterOffset += nextDataEntry;
-        lseek(utilityProps.file, clusterOffset, SEEK_SET);
+        //clusterOffset += nextDataEntry;
+        lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
 
         read(utilityProps.file, info, BYTESPERENTRY);
 
         memcpy(&dirEntry, info, sizeof(struct DirEntry));
 
-        // dirEntry.DIR_name[11] = '\0';
+        dirEntry.DIR_name[11] = '\0';
 
         if (strcmp(dirEntry.DIR_name, "") == 0)
         {
             break;
+        }
+        if (i+1 == 16)
+        {
+          unsigned int newClusterValue;
+          unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
+
+          printf("newClusterValue: %u \n", newClusterValue);
+          printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+          i = 0;
         }
 
         //setting the next offset to look at
         nextDataEntry += BYTESPERENTRY;
     }
 
-    return clusterOffset;
+    //return clusterOffset;
+    return clusterOffset + nextDataEntry;
 }
 
 //listing  cluster entries
@@ -227,7 +237,7 @@ int listDataEntry(unsigned int clusterOffset)
     return nextDataEntry;
 }
 
-unsigned int traverseFAT()
+unsigned int traverseFAT(unsigned int *newClusterValue)
 {
 
     unsigned int lastFATValue = 2;
@@ -252,7 +262,10 @@ unsigned int traverseFAT()
         {
             printf("\n %x \n", lastFATValue);
 
-            printf("offset  %u", fatOffset);
+            printf("offset  %u \n", fatOffset);
+
+            printf("newClusterValue: %d \n", i+1);
+            (*newClusterValue) = i+1;
             break;
         }
         else
