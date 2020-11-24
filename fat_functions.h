@@ -8,6 +8,7 @@
 #define ENTRYPERCLUSTER 16
 #define ENDOFCLUSTER 268435448 // 0FFFFFF8
 #define NEWCLUSTER 4294967295  //FFFFFFFF
+#define BYTES4   4 //16 bits
 
 #define ATTR_READ_ONLY 01
 #define ATTR_HIDDEN 02
@@ -97,7 +98,7 @@ unsigned int getFatValueAtOffset(unsigned int offset);
 unsigned int getNextCluster(unsigned int cluster);
 
 //search for entry
-struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsigned int *bytesCount);
+struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, unsigned int *bytesCount);
 
 int listDataEntry(unsigned int clusterOffset);
 
@@ -105,6 +106,28 @@ unsigned int displayCluster(unsigned int cluster, unsigned int *bytesCount);
 
 unsigned int traverseFAT(unsigned int *newClusterValue);
 
-unsigned int traverseCluster(unsigned int clusterOffset);
+
+/**
+ * Searches the cluster for the queryString.
+ * Returns the offset of the result
+ * bytesCount stores the amount of bytes read for 
+ * checking if the cluster has ended
+*/
+unsigned int searchSectorOffset(unsigned int clusterOffset, char * queryString, unsigned int *bytesCount);
+
+/**
+ * returns the new cluster number and offset of the 
+ * cluster through the params
+ * 
+ * updating the FAT
+*/
+unsigned int setNewFATValue();
+
+
+/**
+ * create new direntry 
+ * Params : 
+*/
+struct DirEntry *createDirEntry(char *name, unsigned int nextCluster, unsigned int attr);
 
 #endif

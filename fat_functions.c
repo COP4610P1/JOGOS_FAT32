@@ -14,6 +14,9 @@
 #include <fcntl.h>
 #include "fat_functions.h"
 
+/**
+ * Get the FAT location for a cluster value
+*/
 int getFatOffset(int cluster)
 {
     return (bpbInfo.BPB_RsvdSecCnt *
@@ -78,8 +81,13 @@ unsigned int getNextCluster(unsigned int cluster)
     return nextCluster;
 }
 
-//search for entry
-struct DirEntry *searchSector(unsigned int clusterOffset, char *querytext, unsigned int *bytesCount)
+/**
+ * Searches the sector for the queryString.
+ * Returns the entry of the result
+ * bytesCount stores the amount of bytes read for 
+ * checking if the cluster has ended
+*/
+struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, unsigned int *bytesCount)
 {
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
@@ -159,7 +167,13 @@ unsigned int displayCluster(unsigned int cluster, unsigned int *bytesCount)
     return nextCluster;
 }
 
-unsigned int traverseCluster(unsigned int clusterOffset)
+/**
+ * Searches the cluster for the queryString.
+ * Returns the offset of the result
+ * bytesCount stores the amount of bytes read for 
+ * checking if the cluster has ended
+*/
+unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, unsigned int *bytesCount)
 {
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
@@ -168,7 +182,7 @@ unsigned int traverseCluster(unsigned int clusterOffset)
     for (int i = 0; i < ENTRYPERCLUSTER; i++)
     {
         //seeking by data entry which is 32 bytes
-        //clusterOffset += nextDataEntry;
+
         lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
 
         read(utilityProps.file, info, BYTESPERENTRY);
@@ -177,29 +191,28 @@ unsigned int traverseCluster(unsigned int clusterOffset)
 
         dirEntry.DIR_name[11] = '\0';
 
-        if (strcmp(dirEntry.DIR_name, "") == 0)
+        if (strcmp(dirEntry.DIR_name, queryString) == 0)
         {
+            unsigned int newClusterValue;
+            unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
+
+            printf("newClusterValue: %u \n", newClusterValue);
+            printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+            i = 0;
             break;
         }
-        if (i+1 == 16)
-        {
-          unsigned int newClusterValue;
-          unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
-
-          printf("newClusterValue: %u \n", newClusterValue);
-          printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
-          i = 0;
-        }
-
         //setting the next offset to look at
         nextDataEntry += BYTESPERENTRY;
     }
 
+    (*bytesCount) = nextDataEntry;
     //return clusterOffset;
     return clusterOffset + nextDataEntry;
 }
 
-//listing  cluster entries
+/*
+* listing  cluster entries
+*/
 int listDataEntry(unsigned int clusterOffset)
 {
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
@@ -237,6 +250,9 @@ int listDataEntry(unsigned int clusterOffset)
     return nextDataEntry;
 }
 
+/**
+ * Traverse the FAT until a empty slot is found
+*/
 unsigned int traverseFAT(unsigned int *newClusterValue)
 {
 
@@ -244,7 +260,7 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
 
     //get the offset/location of the root
     unsigned int fatOffset = getFatOffset(lastFATValue);
-    printf("offset  %u", fatOffset);
+    printf("current root offset  %u", fatOffset);
 
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
@@ -262,10 +278,10 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
         {
             printf("\n %x \n", lastFATValue);
 
-            printf("offset  %u \n", fatOffset);
+            printf("empty offset  %u \n", fatOffset);
 
-            printf("newClusterValue: %d \n", i+1);
-            (*newClusterValue) = i+1;
+            printf("newClusterValue: %d \n", i + 1);
+            (*newClusterValue) = i + 1;
             break;
         }
         else
@@ -275,4 +291,59 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
     }
 
     return fatOffset;
+}
+
+/**
+ * returns the new cluster number and offset of the 
+ * cluster through the params
+ * 
+ * updating the FAT
+*/
+unsigned int setNewFATValue(unsigned int cluster)
+{
+
+    unsigned int newClusterValue;
+    unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
+
+    printf("newClusterValue: %u \n", newClusterValue);
+    printf("+1 Cluster Offset: %u \n", getClusterOffset(newClusterValue + 1));
+    printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+
+    lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
+    write(utilityProps.file, &cluster, BYTES4);
+
+    return newClusterValue;
+}
+
+/**
+ * create new direntry 
+ * Params : name, nextCluster, dir attr
+*/
+struct DirEntry *createDirEntry(char *name, unsigned int nextCluster, unsigned int attr)
+{
+
+    //creating a new file
+    struct DirEntry *dirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
+
+    strcpy(dirEntry->DIR_name, name);
+    dirEntry->DIR_FileSize = 0;
+    dirEntry->DIR_FstClusHI = nextCluster;
+    dirEntry->DIR_FstClusLO = 0;
+    dirEntry->DIR_Attr = attr;
+    dirEntry->DIR_NTRes = 0;
+    dirEntry->DIR_CrtTimeTenth = 0;
+    dirEntry->DIR_CrtTime = 0;
+    dirEntry->DIR_CrtDate = 0;
+    dirEntry->DIR_LstAccDate = 0;
+    dirEntry->DIR_WrtTime = 0;
+    dirEntry->DIR_WrtDate = 0;
+
+    return dirEntry;
+}
+
+
+
+unsigned int getEmptyEntryOffset(unsigned cluster)
+{
+    
 }
