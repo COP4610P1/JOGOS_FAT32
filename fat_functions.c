@@ -115,7 +115,7 @@ struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, 
 
             // printf("\nDIR_name : %s \n", resultEntry->DIR_name);
             // printf("DIR_FileSize : %u \n", resultEntry->DIR_FileSize);
-            // printf("DIR_Attributes : %x \n", resultEntry->DIR_Attr & 0xff);
+            //printf("DIR_Attributes : %x \n", resultEntry->DIR_Attr & 0xff);
             // printf("DIR_FstClusLO : %d \n", resultEntry->DIR_FstClusLO);
             // printf("DIR_FstClusHI : %d \n", resultEntry->DIR_FstClusHI);
         }
@@ -215,6 +215,7 @@ unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, u
 */
 int listDataEntry(unsigned int clusterOffset)
 {
+    printf("\ncluster offset \n %u", clusterOffset);
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
     int nextDataEntry = 0;
@@ -234,8 +235,12 @@ int listDataEntry(unsigned int clusterOffset)
         {
             trimString(dirEntry.DIR_name);
             printf("%s  ", dirEntry.DIR_name);
+            printf("%u  ", dirEntry.DIR_WrtDate);
+            printf("%u  ", dirEntry.DIR_LstAccDate);
+            printf("%u  ", dirEntry.DIR_WrtTime);
+            printf("%u  ", dirEntry.DIR_CrtTime);
             // printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
-            // printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
+             printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
             // printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
             //printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
         }
@@ -306,7 +311,7 @@ unsigned int setNewFATValue(unsigned int cluster)
     unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
 
     printf("newClusterValue: %u \n", newClusterValue);
-    printf("+1 Cluster Offset: %u \n", getClusterOffset(newClusterValue + 1));
+    // printf("+1 Cluster Offset: %u \n", getClusterOffset(newClusterValue + 1));
     printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
 
     lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
@@ -319,7 +324,7 @@ unsigned int setNewFATValue(unsigned int cluster)
  * create new direntry 
  * Params : name, nextCluster, dir attr
 */
-struct DirEntry *createDirEntry(char *name, unsigned int nextCluster, unsigned int attr)
+struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, unsigned int attr)
 {
 
     //creating a new file
@@ -336,14 +341,62 @@ struct DirEntry *createDirEntry(char *name, unsigned int nextCluster, unsigned i
     dirEntry->DIR_CrtDate = 0;
     dirEntry->DIR_LstAccDate = 0;
     dirEntry->DIR_WrtTime = 0;
-    dirEntry->DIR_WrtDate = 0;
+    dirEntry->DIR_WrtDate = 20088;
 
     return dirEntry;
 }
 
+/**
+ * This function add a new directory or file to a cluster
+*/
+void addDirEntry(struct DirEntry *newDirEntry)
+{
+    unsigned int bytesCount;
+    unsigned int newClusterValue;
 
+    //using the currentCluster property to traverse to each cluster
+    unsigned int currentCluster = utilityProps.currentCluster;
+    unsigned int lastCluster = utilityProps.currentCluster;
+
+    //find the next free entry in the cluster
+    unsigned int freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
+                                                      "", &bytesCount);
+
+    while ((bytesCount == bpbInfo.BPB_BytsPerSec))
+    {
+        printf("\nenter loop here\n");
+        currentCluster = getNextCluster(currentCluster);
+        if (currentCluster != -2)
+        {
+
+            printf("\ncurrent cluster offset  %u\n", getClusterOffset(currentCluster));
+            freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
+                                                 "", &bytesCount);
+        }
+        else
+        {
+            printf("end of cluster");
+            // currentCluster = utilityProps.currentCluster;
+            //set the new FAT value
+            newClusterValue = setNewFATValue(NEWCLUSTER);
+            unsigned int fatOffset = getFatOffset(lastCluster);
+
+            //modify the last FATValue that associated with the current cluster.
+            lseek(utilityProps.file, fatOffset, SEEK_SET);
+            write(utilityProps.file, &newClusterValue, BYTES4);
+        }
+
+        lastCluster = currentCluster;
+    }
+
+    printf("free entry space %u", freeEntryOffset);
+
+    //finding the location and writing to the file
+    lseek(utilityProps.file, freeEntryOffset, SEEK_SET);
+
+    write(utilityProps.file, newDirEntry, sizeof(struct DirEntry));
+}
 
 unsigned int getEmptyEntryOffset(unsigned cluster)
 {
-    
 }

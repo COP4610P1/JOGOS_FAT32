@@ -173,6 +173,16 @@ void creatCommand(struct CommandList *commandList)
         return;
     }
 
+    unsigned int *bytesCount;
+
+    struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
+
+    if (strlen(result->DIR_name) != 0)
+    {
+        printf("ERROR : file already exists");
+        return;
+    }
+
     // utilityProps.currentCluster = 435;
     // struct DirEntry *newDirEntry;
     unsigned int nextCluster = utilityProps.currentCluster;
@@ -183,51 +193,9 @@ void creatCommand(struct CommandList *commandList)
     // write(utilityProps.file, &test, 4);
 
     //creating a new file
-    struct DirEntry *dirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
-
-    strcpy(dirEntry->DIR_name, commandList->commands[1]);
-    dirEntry->DIR_FileSize = 0;
-    dirEntry->DIR_FstClusHI = 0;
-    dirEntry->DIR_FstClusLO = 0;
-    dirEntry->DIR_Attr = 0;
-    dirEntry->DIR_NTRes = 0;
-    dirEntry->DIR_CrtTimeTenth = 0;
-    dirEntry->DIR_CrtTime = 0;
-    dirEntry->DIR_CrtDate = 0;
-    dirEntry->DIR_LstAccDate = 0;
-    dirEntry->DIR_WrtTime = 0;
-    dirEntry->DIR_WrtDate = 0;
-
-    unsigned int storedClusterValue = getNextCluster(nextCluster);
-
-    printf("\n 1 FAT Value : %u", storedClusterValue);
-
-    if (storedClusterValue >= ENDOFCLUSTER)
-    {
-        storedClusterValue = nextCluster;
-    }
-    else
-    {
-        while (storedClusterValue < 0)
-        {
-            storedClusterValue = getNextCluster(storedClusterValue);
-        }
-    }
-
-    unsigned int storedClusterOffset = getClusterOffset(storedClusterValue);
-
-    printf("\n FAT Value : %u", storedClusterValue);
-
-    printf("\n Cluster Offset : %u", storedClusterOffset);
-    printf("\n Cluster Value : %u", utilityProps.currentCluster);
-    unsigned int *bytesCount;
-    unsigned int saveSpotOffset = searchSectorOffset(storedClusterOffset, "", bytesCount);
-
-    printf("\n Entry Offset : %u", saveSpotOffset);
-
-    lseek(utilityProps.file, saveSpotOffset, SEEK_SET);
-
-    write(utilityProps.file, dirEntry, sizeof(struct DirEntry));
+    struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 0);
+    //adding the new entry
+    addDirEntry(newDirEntry);
 }
 
 void mkdirCommand(struct CommandList *commandList)
@@ -238,45 +206,29 @@ void mkdirCommand(struct CommandList *commandList)
         return;
     }
 
+    unsigned int bytesCount;
+
+    struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], &bytesCount);
+    printf("\n dir atri 0x%X\n \n", result->DIR_Attr);
+    //printf("Input x:");
+    // scanf("%hhu", &result->DIR_Attr);
+    // printf("\n dir name %s\n", result->DIR_name);
+
+    if (strlen(result->DIR_name) != 0)
+    {
+        printf("ERROR : file already exists");
+        return;
+    }
     //using the currentCluster property to traverse to each cluster
-    unsigned int currentCluster = utilityProps.currentCluster;
+    // unsigned int currentCluster = utilityProps.currentCluster;
+    // unsigned int lastCluster = utilityProps.currentCluster;
 
     unsigned int newClusterValue = setNewFATValue(NEWCLUSTER);
 
-    struct DirEntry *newDirEntry = createDirEntry(commandList->commands[1], newClusterValue, 16);
+    struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], newClusterValue, 16);
 
-    unsigned int bytesCount;
-
-    //find the next free entry in the cluster
-    unsigned int freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
-                                                      "", &bytesCount);
-    printf("\nbytescount %u\n", bytesCount);
-
-    //searching the different clusters for a free slot
-    while ((bytesCount == bpbInfo.BPB_BytsPerSec))
-    {
-        currentCluster = getNextCluster(currentCluster);
-        if (currentCluster != -2)
-        {
-
-            printf("\ncurrent cluster offset \n %u", getClusterOffset(currentCluster));
-            freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
-                                                 "", &bytesCount);
-        }else{
-            //set the new FAT value
-            //modify the last FATValue that associated with the current cluster.
-            //stored the new fat value in the hold fat offset
-            //create the new cluster and set it to the currentcluster
-            // set the default values
-        }
-    }
-
-    printf("free entry space %u", freeEntryOffset);
-
-    //finding the location and writing to the file
-    lseek(utilityProps.file, freeEntryOffset, SEEK_SET);
-
-    write(utilityProps.file, newDirEntry, sizeof(struct DirEntry));
+    //adding the new entry
+    addDirEntry(newDirEntry);
 }
 
 /**

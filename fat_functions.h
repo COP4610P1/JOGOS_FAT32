@@ -128,6 +128,9 @@ unsigned int setNewFATValue();
  * create new direntry 
  * Params : 
 */
-struct DirEntry *createDirEntry(char *name, unsigned int nextCluster, unsigned int attr);
+struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, unsigned int attr);
 
+
+/***/
+void addDirEntry(struct DirEntry *newDirEntry);
 #endif
