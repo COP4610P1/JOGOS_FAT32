@@ -1,12 +1,13 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "project3.h"
 
+//variables
+struct UtilityProps utilityProps;
 
-<<<<<<< Updated upstream
-void _testexit(void){
-    int i = 0;
-    printf("Hello world!");
-}
-=======
 struct BPBInfo bpbInfo;
 struct DirEntry dirEntry;
 
@@ -375,4 +376,3 @@ void trimString(unsigned char *str)
 
     str[count] = '\0';
 }
->>>>>>> Stashed changes

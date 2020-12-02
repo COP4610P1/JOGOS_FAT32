@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = 
+CFLAGS = -std=c99 
 LDFLAGS =
-OBJFILES = project3.o main.o
+OBJFILES = fat_functions.o project3.o main.o
 TARGET = project3
 
 all: $(TARGET)

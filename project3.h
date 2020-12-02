@@ -1,6 +1,7 @@
+#ifndef PROJ3
+#define PROJ3
+
 #include <stdio.h>
-<<<<<<< Updated upstream
-=======
 #include "fat_functions.h"
 
 typedef enum
@@ -66,17 +67,15 @@ void sizeCommand(struct CommandList *commandList);
 
 //cd command
 void cdCommand(struct CommandList *commandList);
->>>>>>> Stashed changes
 
+//creat command
+void creatCommand(struct CommandList *commandList);
 
-void _testexit(void);
+//mkdir commnand
+void mkdirCommand(struct CommandList *commandList);
 
-<<<<<<< Updated upstream
-    
-=======
 //rm commnand
 void rmCommand(struct CommandList *commandList);
 
 
 #endif
->>>>>>> Stashed changes

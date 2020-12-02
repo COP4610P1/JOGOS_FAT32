@@ -1,29 +1,66 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "project3.h"
 
-int main()
+// get each token from user input
+struct CommandList *getCommands(char *userInput);
+
+//reads the file
+int getFile(char *filePath);
+
+//add token to command list
+void add_command(struct CommandList *commandList, char *item);
+
+//create  memory for the command list
+struct CommandList *new_commandList(void);
+
+//get user input
+char *getInput(void);
+
+int main(int argc, char **argv)
 {
-    char command[100];
 
-    while (command != "exit")
+    char *commands;
+    unsigned char *BPB_BytesPerSec;
+
+    boolean stop = false;
+
+    if (argv[1] == NULL)
     {
-        printf("$ ");
-        scanf("%s",command);
+        printf("Missing arguement\n");
+        return -1;
+    }
 
-        if (strcmp(command,"info") == 0)
+    utilityProps.file = getFile(argv[1]);
+
+    setBPBInfo(utilityProps.file);
+
+    do
+    {
+        struct CommandList *commandList = new_commandList();
+
+        printf("\n$ ");
+
+        //get user input
+        char *userInput = getInput();
+
+        commandList = getCommands(userInput);
+
+        if (strcmp(commandList->commands[0], "info") == 0)
         {
+            infoCommand();
         }
-        else if (strcmp(command,"ls") == 0)
+        else if (strcmp(commandList->commands[0], "ls") == 0)
         {
+            lsCommand(commandList);
         }
-        else if (strcmp(command,"exit") == 0)
+        else if (strcmp(commandList->commands[0], "size") == 0)
         {
-            
-            _testexit();
+            sizeCommand(commandList);
         }
-<<<<<<< Updated upstream
-=======
         else if (strcmp(commandList->commands[0], "cd") == 0)
         {
             cdCommand(commandList);
@@ -157,8 +194,10 @@ char *getInput(void)
 
         if (newln != NULL)
             break;
->>>>>>> Stashed changes
     }
 
-    return 0;
+    buffer = (char *)realloc(buffer, bufsize + 1);
+    buffer[bufsize] = 0;
+
+    return buffer;
 }
