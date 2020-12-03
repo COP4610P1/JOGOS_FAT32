@@ -16,7 +16,7 @@ void setBPBInfo(int file)
     getFileData(utilityProps.file);
     getFirstDataSectorForCluster();
 
-    utilityProps.currentCluster = bpbInfo.BPB_RootClus;
+    utilityProps.prevParentCluster = utilityProps.currentCluster = bpbInfo.BPB_RootClus;
 }
 
 /**
@@ -163,7 +163,7 @@ void infoCommand()
 
 void sizeCommand(struct CommandList *commandList)
 {
-fflush(stdout);
+    fflush(stdout);
     unsigned int bytesCount;
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
     unsigned int currentCluster = utilityProps.currentCluster;
@@ -194,6 +194,8 @@ fflush(stdout);
 
 void cdCommand(struct CommandList *commandList)
 {
+    printf("\n prev cluster 1 : %u\n", utilityProps.prevParentCluster);
+    utilityProps.prevParentCluster = utilityProps.currentCluster;
     fflush(stdout);
     unsigned int bytesCount;
     //get the current cluster offset(location) for the data
@@ -221,6 +223,7 @@ void cdCommand(struct CommandList *commandList)
         // printf("%u", currentCluster);
         if (currentCluster != 0)
         {
+            utilityProps.prevParentCluster = utilityProps.currentCluster;
             utilityProps.currentCluster = currentCluster;
         }
     }
@@ -228,6 +231,9 @@ void cdCommand(struct CommandList *commandList)
     {
         printf("ERROR: File doesn't exits");
     }
+
+    printf("\n prev cluster 2 %u\n", utilityProps.prevParentCluster);
+    printf("\n cluster  %u\n", utilityProps.currentCluster);
 }
 
 void creatCommand(struct CommandList *commandList)
@@ -243,7 +249,7 @@ void creatCommand(struct CommandList *commandList)
 
     struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
 
-    if (strlen(result->DIR_name) != 0 && (result->DIR_Attr == 0))
+    if (strlen(result->DIR_name) != 0 && (result->DIR_Attr == 32))
     {
         printf("ERROR : file already exists");
         return;
@@ -254,7 +260,7 @@ void creatCommand(struct CommandList *commandList)
     unsigned int nextCluster = utilityProps.currentCluster;
 
     //creating a new file
-    struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 0);
+    struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 32);
     //adding the new entry
     addDirEntry(newDirEntry, utilityProps.currentCluster);
 }
@@ -288,6 +294,9 @@ void mkdirCommand(struct CommandList *commandList)
 
     //adding the new entry
     addDirEntry(newDirEntry, utilityProps.currentCluster);
+
+    //adding the default directory entries
+    //addDefaultDirectoryEntry(newClusterValue);
 }
 
 void mvCommand(struct CommandList *commandList)
@@ -297,6 +306,7 @@ void mvCommand(struct CommandList *commandList)
 
     unsigned int *bytesCount;
 
+    // TODO modify this to search all clusters
     struct DirEntry *toEntry = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[2], bytesCount);
 
     if (strlen(toEntry->DIR_name) == 0)
@@ -311,6 +321,7 @@ void mvCommand(struct CommandList *commandList)
         return;
     }
 
+    // TODO modify this to search all clusters
     struct DirEntry *fromEntry = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
 
     //getting the cluster
@@ -340,20 +351,19 @@ void cpCommand(struct CommandList *commandList)
         return;
     }
 
-    if (originalFile->DIR_Attr != 0)
+    if (originalFile->DIR_Attr != ATTR_ARCHIVE)
     {
         printf("\nERROR : not a file\n");
         return;
     }
 
-    if (strlen(toEntry->DIR_name) == 0 || toEntry->DIR_Attr != 16)
+    if (strlen(toEntry->DIR_name) == 0 || toEntry->DIR_Attr != ATTR_DIRECTORY)
     {
         // printf("\nfolder doesn't exist %s\n", toEntry->DIR_name);
         //fflush(stdout);
         storeCluster = utilityProps.currentCluster;
 
         memcpy(originalFile->DIR_name, commandList->commands[2], sizeof(commandList->commands[2]));
-        printf("\nnew name %s\n", originalFile->DIR_name);
     }
     else
     {
@@ -361,10 +371,11 @@ void cpCommand(struct CommandList *commandList)
         storeCluster = toEntry->DIR_FstClusHI;
 
         storeCluster << 4;
+        printf("\nstoreCluster %u\n", storeCluster);
         storeCluster += toEntry->DIR_FstClusLO;
     }
 
-    addDirEntry(originalFile, storeCluster);
+    //addDirEntry(originalFile, storeCluster);
 }
 
 /**

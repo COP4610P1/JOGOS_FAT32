@@ -30,6 +30,9 @@ struct UtilityProps
      * store the current cluster/location
     */
     unsigned int currentCluster;
+    unsigned int prevParentCluster;
+
+
 };
 
 //variables

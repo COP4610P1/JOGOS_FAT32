@@ -139,4 +139,6 @@ void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster);
 
 int listDataEntry2(unsigned int clusterOffset,  char * queryString);
 
+void addDefaultDirectoryEntry(unsigned int cluster);
+
 #endif
