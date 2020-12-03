@@ -78,4 +78,8 @@ void mvCommand(struct CommandList *commandList);
 
 int stringCompare(char * str1, char * str2, int size);
 
+void lsCommand2(struct CommandList *temp, struct CommandList *commandList);
+
+
+void cpCommand(struct CommandList *commandList);
 #endif

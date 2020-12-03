@@ -398,6 +398,70 @@ void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
     write(utilityProps.file, newDirEntry, sizeof(struct DirEntry));
 }
 
+
+int listDataEntry2(unsigned int clusterOffset, char * queryString)
+{
+    unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
+
+    int nextDataEntry = 0;
+
+    for (int i = 0; i < ENTRYPERCLUSTER; i++)
+    {
+        //seeking by data entry which is 32 bytes
+        lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
+
+        read(utilityProps.file, info, BYTESPERENTRY);
+
+        memcpy(&dirEntry, info, sizeof(struct DirEntry));
+
+        dirEntry.DIR_name[11] = '\0';
+
+        if (strcmp(dirEntry.DIR_name, "") != 0)
+        {
+            trimString(dirEntry.DIR_name);
+            if (strcmp(dirEntry.DIR_name, queryString) == 0 && dirEntry.DIR_Attr != 16)
+            {
+              printf("%s  \n", dirEntry.DIR_name);
+              //printf("nextDataEntry: %d \n", nextDataEntry);
+              struct DirEntry *emptyDirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
+
+              emptyDirEntry->DIR_name[0] = '\0';
+              //printf("DirName: %s", emptyDirEntry->DIR_name);
+              emptyDirEntry->DIR_FileSize = 0;
+              emptyDirEntry->DIR_FstClusHI = 0;
+              emptyDirEntry->DIR_FstClusLO = 0;
+              emptyDirEntry->DIR_Attr = 0;
+              emptyDirEntry->DIR_NTRes = 0;
+              emptyDirEntry->DIR_CrtTimeTenth = 0;
+              emptyDirEntry->DIR_CrtTime = 0;
+              emptyDirEntry->DIR_CrtDate = 0;
+              emptyDirEntry->DIR_LstAccDate = 0;
+              emptyDirEntry->DIR_WrtTime = 0;
+              emptyDirEntry->DIR_WrtDate = 0;
+
+              lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
+
+              write(utilityProps.file, emptyDirEntry, sizeof(struct DirEntry));
+              break;
+            }
+            // printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
+            // printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
+            // printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
+            //printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
+        }
+        else
+        {
+            break;
+        }
+        //setting the next offset to look at
+        nextDataEntry += BYTESPERENTRY;
+    }
+    //printf("nextDataEntry: %d \n", nextDataEntry);
+    return nextDataEntry + clusterOffset;
+}
+
+
+
 unsigned int getEmptyEntryOffset(unsigned cluster)
 {
 }

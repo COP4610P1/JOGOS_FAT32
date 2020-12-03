@@ -136,4 +136,7 @@ struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, u
 
 /***/
 void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster);
+
+int listDataEntry2(unsigned int clusterOffset,  char * queryString);
+
 #endif

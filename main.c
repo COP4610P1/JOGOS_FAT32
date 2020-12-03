@@ -75,6 +75,23 @@ int main(int argc, char **argv)
         }else if (strcmp(commandList->commands[0], "mv") == 0)
         {
             mvCommand(commandList);
+
+            struct CommandList *temp = new_commandList();
+            userInput = "ls";
+            temp = getCommands(userInput);
+            lsCommand2(temp, commandList);
+
+        }
+         else if (strcmp(commandList->commands[0], "rm") == 0)
+        {
+            struct CommandList *temp = new_commandList();
+            userInput = "ls";
+            temp = getCommands(userInput);
+            lsCommand2(temp, commandList);
+            //rmCommand();
+        }else if (strcmp(commandList->commands[0], "cp") == 0)
+        {
+            cpCommand(commandList);
         }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
@@ -85,6 +102,8 @@ int main(int argc, char **argv)
         {
             printf("\nERROR : Unknown command: %s", userInput);
         }
+
+        
 
     } while (stop != true);
 
