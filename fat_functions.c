@@ -104,7 +104,7 @@ struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, 
 
         memcpy(&dirEntry, info, sizeof(struct DirEntry));
 
-        dirEntry.DIR_name[11] = '\0';
+        dirEntry.DIR_name[10] = '\0';
         trimString(dirEntry.DIR_name);
 
         //  printf("dir name size %d", (int)sizeof(dirEntry.DIR_name));
@@ -215,34 +215,35 @@ unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, u
 */
 int listDataEntry(unsigned int clusterOffset)
 {
-    printf("\ncluster offset \n %u", clusterOffset);
+    //printf("\ncluster offset \n %u", clusterOffset);
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
     int nextDataEntry = 0;
+    struct DirEntry entry;
 
     for (int i = 0; i < ENTRYPERCLUSTER; i++)
     {
         //seeking by data entry which is 32 bytes
         lseek(utilityProps.file, clusterOffset + nextDataEntry, SEEK_SET);
 
-        read(utilityProps.file, info, BYTESPERENTRY);
+        read(utilityProps.file, &entry, BYTESPERENTRY);
 
-        memcpy(&dirEntry, info, sizeof(struct DirEntry));
+        //memcpy(, info, sizeof(struct DirEntry));
 
-        dirEntry.DIR_name[11] = '\0';
+        //TODO entry.DIR_name[11] = '\0';
+        //strncmp()
+        //don't worry about empty names
+        //apply the long name
+        //attribute & LONGNAME
+        //test << 4
 
-        if (strcmp(dirEntry.DIR_name, "") != 0)
+        //hi and low
+        if (strcmp(entry.DIR_name, "") != 0)
         {
-            trimString(dirEntry.DIR_name);
-            printf("%s  ", dirEntry.DIR_name);
-            printf("%u  ", dirEntry.DIR_WrtDate);
-            printf("%u  ", dirEntry.DIR_LstAccDate);
-            printf("%u  ", dirEntry.DIR_WrtTime);
-            printf("%u  ", dirEntry.DIR_CrtTime);
-            // printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
-             printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
-            // printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
-            //printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
+            // if (LONGNAME == (entry.DIR_Attr & LONGNAME))
+            // {
+            trimString(entry.DIR_name);
+            printf("%s  ", entry.DIR_name);
         }
         else
         {
@@ -283,9 +284,9 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
         {
             printf("\n %x \n", lastFATValue);
 
-            printf("empty offset  %u \n", fatOffset);
+            //printf("empty offset  %u \n", fatOffset);
 
-            printf("newClusterValue: %d \n", i + 1);
+            //printf("newClusterValue: %d \n", i + 1);
             (*newClusterValue) = i + 1;
             break;
         }

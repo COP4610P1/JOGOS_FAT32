@@ -177,7 +177,7 @@ void creatCommand(struct CommandList *commandList)
 
     struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
 
-    if (strlen(result->DIR_name) != 0)
+    if (strlen(result->DIR_name) != 0 && (result->DIR_Attr == 0))
     {
         printf("ERROR : file already exists");
         return;
@@ -186,11 +186,6 @@ void creatCommand(struct CommandList *commandList)
     // utilityProps.currentCluster = 435;
     // struct DirEntry *newDirEntry;
     unsigned int nextCluster = utilityProps.currentCluster;
-    // //updating fat
-    // unsigned int emptyFATOffset = traverseFAT();
-    // lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
-    // unsigned int test = NEWCLUSTER;
-    // write(utilityProps.file, &test, 4);
 
     //creating a new file
     struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 0);
@@ -209,20 +204,17 @@ void mkdirCommand(struct CommandList *commandList)
     unsigned int bytesCount;
 
     struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], &bytesCount);
-    printf("\n dir atri 0x%X\n \n", result->DIR_Attr);
+    //printf("\n dir atri 0x%X\n \n", result->DIR_Attr);
     //printf("Input x:");
     // scanf("%hhu", &result->DIR_Attr);
     // printf("\n dir name %s\n", result->DIR_name);
 
-    if (strlen(result->DIR_name) != 0)
+    if (strlen(result->DIR_name) != 0 && (result->DIR_Attr == 16))
     {
         printf("ERROR : file already exists");
         return;
     }
-    //using the currentCluster property to traverse to each cluster
-    // unsigned int currentCluster = utilityProps.currentCluster;
-    // unsigned int lastCluster = utilityProps.currentCluster;
-
+    
     unsigned int newClusterValue = setNewFATValue(NEWCLUSTER);
 
     struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], newClusterValue, 16);
@@ -231,6 +223,9 @@ void mkdirCommand(struct CommandList *commandList)
     addDirEntry(newDirEntry);
 }
 
+void mvCommand(struct CommandList *commandList){
+    printf("move");
+}
 /**
  * others
 */
@@ -263,4 +258,10 @@ void trimString(unsigned char *str)
     }
 
     str[count] = '\0';
+}
+
+
+int stringCompare(char * str1, char * str2, int size){
+    
+    //for()
 }

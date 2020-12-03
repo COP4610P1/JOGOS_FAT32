@@ -73,4 +73,9 @@ void creatCommand(struct CommandList *commandList);
 //mkdir commnand
 void mkdirCommand(struct CommandList *commandList);
 
+void mvCommand(struct CommandList *commandList);
+
+
+int stringCompare(char * str1, char * str2, int size);
+
 #endif

@@ -10,12 +10,15 @@
 #define NEWCLUSTER 4294967295  //FFFFFFFF
 #define BYTES4   4 //16 bits
 
-#define ATTR_READ_ONLY 01
-#define ATTR_HIDDEN 02
-#define ATTR_SYSTEM 04
-#define ATTR_VOLUME_ID 08
+//recommend using 0x* 
+#define ATTR_READ_ONLY 1
+#define ATTR_HIDDEN 2
+#define ATTR_SYSTEM 4
+#define ATTR_VOLUME_ID 8
 #define ATTR_DIRECTORY 16
 #define ATTR_ARCHIVE 32
+#define LONGNAME (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
+
 
 struct BPBInfo
 {

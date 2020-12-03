@@ -72,6 +72,9 @@ int main(int argc, char **argv)
         else if (strcmp(commandList->commands[0], "mkdir") == 0)
         {
             mkdirCommand(commandList);
+        }else if (strcmp(commandList->commands[0], "mv") == 0)
+        {
+            mvCommand(commandList);
         }
         else if (strcmp(commandList->commands[0], "exit") == 0)
         {
