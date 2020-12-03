@@ -342,7 +342,7 @@ struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, u
     dirEntry->DIR_CrtDate = 0;
     dirEntry->DIR_LstAccDate = 0;
     dirEntry->DIR_WrtTime = 0;
-    dirEntry->DIR_WrtDate = 20088;
+    dirEntry->DIR_WrtDate = 0;
 
     return dirEntry;
 }
@@ -350,14 +350,14 @@ struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, u
 /**
  * This function add a new directory or file to a cluster
 */
-void addDirEntry(struct DirEntry *newDirEntry)
+void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
 {
     unsigned int bytesCount;
     unsigned int newClusterValue;
 
     //using the currentCluster property to traverse to each cluster
-    unsigned int currentCluster = utilityProps.currentCluster;
-    unsigned int lastCluster = utilityProps.currentCluster;
+    unsigned int currentCluster = cluster;
+    unsigned int lastCluster = cluster;
 
     //find the next free entry in the cluster
     unsigned int freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
@@ -365,18 +365,18 @@ void addDirEntry(struct DirEntry *newDirEntry)
 
     while ((bytesCount == bpbInfo.BPB_BytsPerSec))
     {
-        printf("\nenter loop here\n");
+       // printf("\nenter loop here\n");
         currentCluster = getNextCluster(currentCluster);
         if (currentCluster != -2)
         {
 
-            printf("\ncurrent cluster offset  %u\n", getClusterOffset(currentCluster));
+           // printf("\ncurrent cluster offset  %u\n", getClusterOffset(currentCluster));
             freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
                                                  "", &bytesCount);
         }
         else
         {
-            printf("end of cluster");
+            //printf("end of cluster");
             // currentCluster = utilityProps.currentCluster;
             //set the new FAT value
             newClusterValue = setNewFATValue(NEWCLUSTER);
@@ -390,7 +390,7 @@ void addDirEntry(struct DirEntry *newDirEntry)
         lastCluster = currentCluster;
     }
 
-    printf("free entry space %u", freeEntryOffset);
+    //printf("free entry space %u", freeEntryOffset);
 
     //finding the location and writing to the file
     lseek(utilityProps.file, freeEntryOffset, SEEK_SET);

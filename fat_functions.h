@@ -135,5 +135,5 @@ struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, u
 
 
 /***/
-void addDirEntry(struct DirEntry *newDirEntry);
+void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster);
 #endif

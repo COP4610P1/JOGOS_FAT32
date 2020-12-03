@@ -190,7 +190,7 @@ void creatCommand(struct CommandList *commandList)
     //creating a new file
     struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 0);
     //adding the new entry
-    addDirEntry(newDirEntry);
+    addDirEntry(newDirEntry, utilityProps.currentCluster);
 }
 
 void mkdirCommand(struct CommandList *commandList)
@@ -214,17 +214,66 @@ void mkdirCommand(struct CommandList *commandList)
         printf("ERROR : file already exists");
         return;
     }
-    
+
     unsigned int newClusterValue = setNewFATValue(NEWCLUSTER);
 
     struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], newClusterValue, 16);
 
     //adding the new entry
-    addDirEntry(newDirEntry);
+    addDirEntry(newDirEntry, utilityProps.currentCluster);
 }
 
-void mvCommand(struct CommandList *commandList){
-    printf("move");
+void mvCommand(struct CommandList *commandList)
+{
+    printf("move\n");
+
+    unsigned int *bytesCount;
+
+    struct DirEntry *toEntry = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[2], bytesCount);
+
+    if (strlen(toEntry->DIR_name) == 0)
+    {
+        printf("\nERROR : directory doesn't exist");
+        return;
+    }
+
+    if (toEntry->DIR_Attr != 16)
+    {
+        printf("\nERROR : not a directory");
+        return;
+    }
+
+    struct DirEntry *fromEntry = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
+
+    // printf("from %s\n", fromEntry->DIR_name);
+    //*cpyFromEntry = *fromEntry;
+
+    //memcpy(cpyFromEntry, fromEntry, sizeof(struct DirEntry));
+
+    //getting the cluster
+    unsigned int cluster = toEntry->DIR_FstClusHI;
+
+    //printf("\n this %u\n", cluster);
+    //fflush(stdout);
+    cluster << 4;
+    cluster += toEntry->DIR_FstClusLO;
+
+    //printf("mv cluster %u\n", cluster);
+
+    //struct DirEntry cpyFromEntry = *createNewDirEntryStruct(fromEntry->DIR_name, cluster, fromEntry->DIR_Attr);
+
+    //printf("mv cluster offset %u\n", getClusterOffset(cluster));
+
+    addDirEntry(fromEntry, cluster);
+
+    *bytesCount = 0;
+    unsigned int rmDirEntryOffset = searchSectorOffset(getClusterOffset(utilityProps.countOfClusters), fromEntry->DIR_name, bytesCount);
+
+    //struct DirEntry cpyFromEntry ;
+    //= *createNewDirEntryStruct(0, 0, 0);
+
+   // lseek(utilityProps.file, rmDirEntryOffset, SEEK_SET);
+    //write(utilityProps.file, &cpyFromEntry, sizeof(struct DirEntry));
 }
 /**
  * others
@@ -260,8 +309,8 @@ void trimString(unsigned char *str)
     str[count] = '\0';
 }
 
+int stringCompare(char *str1, char *str2, int size)
+{
 
-int stringCompare(char * str1, char * str2, int size){
-    
     //for()
 }
