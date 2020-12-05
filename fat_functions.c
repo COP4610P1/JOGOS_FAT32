@@ -203,7 +203,6 @@ unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, u
     //return clusterOffset;
     return clusterOffset + nextDataEntry;
 }
-
 /*
 * listing  cluster entries
 */
@@ -249,7 +248,6 @@ int listDataEntry(unsigned int clusterOffset)
 
     return nextDataEntry;
 }
-
 /**
  * Traverse the FAT until a empty slot is found
 */
@@ -305,9 +303,9 @@ unsigned int setNewFATValue(unsigned int cluster)
     unsigned int newClusterValue;
     unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
 
-    printf("newClusterValue: %u \n", newClusterValue);
+    printf("FAT newClusterValue: %u \n", newClusterValue);
     // printf("+1 Cluster Offset: %u \n", getClusterOffset(newClusterValue + 1));
-    printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+    printf(" FAT New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
 
     lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
     write(utilityProps.file, &cluster, BYTES4);
@@ -346,7 +344,7 @@ struct DirEntry *createNewDirEntryStruct(char *name, unsigned int nextCluster, u
 */
 void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
 {
-    unsigned int bytesCount;
+    unsigned int bytesCount =  -1;
     unsigned int newClusterValue;
 
     //using the currentCluster property to traverse to each cluster
@@ -357,14 +355,19 @@ void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
     unsigned int freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
                                                       "", &bytesCount);
 
-    while ((bytesCount == bpbInfo.BPB_BytsPerSec))
+    printf("\n freeEntryOffset %u \n", freeEntryOffset);
+
+    while ((bytesCount == bpbInfo.BPB_BytsPerSec  || bytesCount == -1))
     {
+   printf("\n looping \n");
         currentCluster = getNextCluster(currentCluster);
+
         if (currentCluster != -2)
         {
 
             freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
                                                  "", &bytesCount);
+                                                // break;
         }
         else
         {

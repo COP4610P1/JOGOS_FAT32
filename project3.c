@@ -19,12 +19,13 @@ void setBPBInfo(int file)
     utilityProps.prevParentCluster = utilityProps.currentCluster = bpbInfo.BPB_RootClus;
 }
 
+
 /**
  * ls functions
 */
 void lsCommand(struct CommandList *commandList)
 {
-    fflush(stdout);
+   // fflush(stdout);
     // utilityProps.currentCluster = 435; // using as a trigger to test each directory
     unsigned int bytesCount = -1;
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
@@ -77,12 +78,10 @@ void lsCommand(struct CommandList *commandList)
         printf("ERROR: too many arguements");
     }
 }
-
 /***/
 
 void lsCommand2(struct CommandList *temp, struct CommandList *commandList)
 {
-    fflush(stdout);
     // utilityProps.currentCluster = 435; // using as a trigger to test each directory
     unsigned char arr[256];
     int i = 0;
@@ -146,7 +145,7 @@ void lsCommand2(struct CommandList *temp, struct CommandList *commandList)
 
 void infoCommand()
 {
-    fflush(stdout);
+
     printf("Bytes per Sector: %u \n", bpbInfo.BPB_BytsPerSec);
     printf("Sectors per Cluster: %u \n", (unsigned int)bpbInfo.BPB_SecPerClus);
     printf("Reseverd Sector count: %u \n", bpbInfo.BPB_RsvdSecCnt);
@@ -163,7 +162,7 @@ void infoCommand()
 
 void sizeCommand(struct CommandList *commandList)
 {
-    fflush(stdout);
+  
     unsigned int bytesCount;
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
     unsigned int currentCluster = utilityProps.currentCluster;
@@ -238,7 +237,7 @@ void cdCommand(struct CommandList *commandList)
 
 void creatCommand(struct CommandList *commandList)
 {
-    fflush(stdout);
+   // fflush(stdout);
     if (commandList->commands[1] == NULL)
     {
         printf("ERROR : enter a file name");
@@ -257,7 +256,7 @@ void creatCommand(struct CommandList *commandList)
 
     // utilityProps.currentCluster = 435;
     // struct DirEntry *newDirEntry;
-    unsigned int nextCluster = utilityProps.currentCluster;
+    //unsigned int nextCluster = utilityProps.currentCluster;
 
     //creating a new file
     struct DirEntry *newDirEntry = createNewDirEntryStruct(commandList->commands[1], 0, 32);
@@ -267,16 +266,16 @@ void creatCommand(struct CommandList *commandList)
 
 void mkdirCommand(struct CommandList *commandList)
 {
-    fflush(stdout);
+   // fflush(stdout);
     if (commandList->commands[1] == NULL)
     {
         printf("ERROR : enter a file name");
         return;
     }
 
-    unsigned int bytesCount;
+    unsigned int * bytesCount;
 
-    struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], &bytesCount);
+    struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
     //printf("\n dir atri 0x%X\n \n", result->DIR_Attr);
     //printf("Input x:");
     // scanf("%hhu", &result->DIR_Attr);
