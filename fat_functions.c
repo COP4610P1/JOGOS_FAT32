@@ -55,8 +55,7 @@ unsigned int getFatValueAtOffset(unsigned int offset)
 
     memcpy(&fatValueOffset, info, sizeof(int));
 
-    //printf("\n fatValueOffset %u \n", fatValueOffset);
-
+   
     return fatValueOffset;
 }
 
@@ -107,7 +106,6 @@ struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, 
         dirEntry.DIR_name[10] = '\0';
         trimString(dirEntry.DIR_name);
 
-        //  printf("dir name size %d", (int)sizeof(dirEntry.DIR_name));
 
         if (strcmp(dirEntry.DIR_name, querytext) == 0)
         {
@@ -118,7 +116,6 @@ struct DirEntry *searchSectorEntry(unsigned int clusterOffset, char *querytext, 
             break;
         }
 
-        //printf("\n");
         nextDataEntry += BYTESPERENTRY;
     }
 
@@ -190,8 +187,7 @@ unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, u
             unsigned int newClusterValue;
             unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
 
-            printf("newClusterValue: %u \n", newClusterValue);
-            printf("New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
+          
             i = 0;
             break;
         }
@@ -208,7 +204,7 @@ unsigned int searchSectorOffset(unsigned int clusterOffset, char *queryString, u
 */
 int listDataEntry(unsigned int clusterOffset)
 {
-    //printf("\ncluster offset \n %u", clusterOffset);
+   
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
     int nextDataEntry = 0;
@@ -221,20 +217,12 @@ int listDataEntry(unsigned int clusterOffset)
 
         read(utilityProps.file, &entry, BYTESPERENTRY);
 
-        //memcpy(, info, sizeof(struct DirEntry));
-
-        //TODO entry.DIR_name[11] = '\0';
-        //strncmp()
-        //don't worry about empty names
-        //apply the long name
-        //attribute & LONGNAME
-        //test << 4
+    
 
         //hi and low
         if (strcmp(entry.DIR_name, "") != 0)
         {
-            // if (LONGNAME == (entry.DIR_Attr & LONGNAME))
-            // {
+            
             trimString(entry.DIR_name);
             printf("%s  ", entry.DIR_name);
         }
@@ -258,7 +246,7 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
 
     //get the offset/location of the root
     unsigned int fatOffset = getFatOffset(lastFATValue);
-    printf("current root offset  %u", fatOffset);
+   
 
     unsigned char *info = (unsigned char *)malloc(sizeof(unsigned char) * BYTESPERENTRY);
 
@@ -274,11 +262,8 @@ unsigned int traverseFAT(unsigned int *newClusterValue)
 
         if (lastFATValue == 0)
         {
-            printf("\n %x \n", lastFATValue);
-
-            //printf("empty offset  %u \n", fatOffset);
-
-            //printf("newClusterValue: %d \n", i + 1);
+           
+           
             (*newClusterValue) = i + 1;
             break;
         }
@@ -302,11 +287,6 @@ unsigned int setNewFATValue(unsigned int cluster)
 
     unsigned int newClusterValue;
     unsigned int emptyFATOffset = traverseFAT(&newClusterValue);
-
-    printf("FAT newClusterValue: %u \n", newClusterValue);
-    // printf("+1 Cluster Offset: %u \n", getClusterOffset(newClusterValue + 1));
-    printf(" FAT New Cluster Offset: %u \n", getClusterOffset(newClusterValue));
-
     lseek(utilityProps.file, emptyFATOffset, SEEK_SET);
     write(utilityProps.file, &cluster, BYTES4);
 
@@ -355,11 +335,11 @@ void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
     unsigned int freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
                                                       "", &bytesCount);
 
-    printf("\n freeEntryOffset %u \n", freeEntryOffset);
+   
 
     while ((bytesCount == bpbInfo.BPB_BytsPerSec  || bytesCount == -1))
     {
-   printf("\n looping \n");
+  
         currentCluster = getNextCluster(currentCluster);
 
         if (currentCluster != -2)
@@ -367,7 +347,7 @@ void addDirEntry(struct DirEntry *newDirEntry, unsigned int cluster)
 
             freeEntryOffset = searchSectorOffset(getClusterOffset(currentCluster),
                                                  "", &bytesCount);
-                                                // break;
+                                               
         }
         else
         {
@@ -414,11 +394,9 @@ int listDataEntry2(unsigned int clusterOffset, char *queryString)
             if (strcmp(dirEntry.DIR_name, queryString) == 0 && dirEntry.DIR_Attr != 16)
             {
                 printf("%s  \n", dirEntry.DIR_name);
-                //printf("nextDataEntry: %d \n", nextDataEntry);
                 struct DirEntry *emptyDirEntry = (struct DirEntry *)malloc(sizeof(struct DirEntry));
 
                 emptyDirEntry->DIR_name[0] = '\0';
-                //printf("DirName: %s", emptyDirEntry->DIR_name);
                 emptyDirEntry->DIR_FileSize = 0;
                 emptyDirEntry->DIR_FstClusHI = 0;
                 emptyDirEntry->DIR_FstClusLO = 0;
@@ -436,10 +414,7 @@ int listDataEntry2(unsigned int clusterOffset, char *queryString)
                 write(utilityProps.file, emptyDirEntry, sizeof(struct DirEntry));
                 break;
             }
-            // printf("DIR_FileSize : %u \n", dirEntry.DIR_FileSize);
-            // printf("DIR_Attributes : %x \n", dirEntry.DIR_Attr & 0xff);
-            // printf("DIR_FstClusLO : %d \n", dirEntry.DIR_FstClusLO);
-            //printf("DIR_FstClusHI : %d \n", dirEntry.DIR_FstClusHI);
+           
         }
         else
         {
@@ -448,7 +423,7 @@ int listDataEntry2(unsigned int clusterOffset, char *queryString)
         //setting the next offset to look at
         nextDataEntry += BYTESPERENTRY;
     }
-    //printf("nextDataEntry: %d \n", nextDataEntry);
+    
     return nextDataEntry + clusterOffset;
 }
 
@@ -467,7 +442,7 @@ void addDefaultDirectoryEntry(unsigned int cluster)
     {
         struct DirEntry *dotDirEntry = createNewDirEntryStruct(".", cluster, 16);
         addDirEntry(dotDirEntry, cluster);
-        printf("\ncluster : %u\n", cluster);
+        
     }
 
    struct DirEntry * result2 = searchSectorEntry(getClusterOffset(cluster), "..", bytesCount);

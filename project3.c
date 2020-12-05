@@ -25,8 +25,8 @@ void setBPBInfo(int file)
 */
 void lsCommand(struct CommandList *commandList)
 {
-   // fflush(stdout);
-    // utilityProps.currentCluster = 435; // using as a trigger to test each directory
+  
+    
     unsigned int bytesCount = -1;
     unsigned int clusterOffset = getClusterOffset(utilityProps.currentCluster);
     unsigned int currentCluster = utilityProps.currentCluster;
@@ -93,9 +93,9 @@ void lsCommand2(struct CommandList *temp, struct CommandList *commandList)
 
     if (temp->length < 2)
     {
-        //printf("CommandList: %s %s %s \n", commandList->commands[0], commandList->commands[1]);
+        
         bytesCount = listDataEntry2(clusterOffset, commandList->commands[1]);
-        printf("bytesCount: %d \n", bytesCount);
+      
         currentCluster = displayCluster(currentCluster, &bytesCount);
     }
     else if (temp->length == 2)
@@ -150,7 +150,6 @@ void infoCommand()
     printf("Sectors per Cluster: %u \n", (unsigned int)bpbInfo.BPB_SecPerClus);
     printf("Reseverd Sector count: %u \n", bpbInfo.BPB_RsvdSecCnt);
     printf("Number of FATs: %u \n", (unsigned int)bpbInfo.BPB_NumFATs);
-    // printf("BPB_RootEntCnt : %u \n", bpbInfo.BPB_RootEntCnt);
     printf("Total Sectors : %u \n", bpbInfo.BPB_TotSec32);
     printf("FATsize : %u \n", bpbInfo.BPB_FATSz32);
     printf("Root Cluster  : %u \n", bpbInfo.BPB_RootClus);
@@ -193,7 +192,7 @@ void sizeCommand(struct CommandList *commandList)
 
 void cdCommand(struct CommandList *commandList)
 {
-    printf("\n prev cluster 1 : %u\n", utilityProps.prevParentCluster);
+   
     utilityProps.prevParentCluster = utilityProps.currentCluster;
     fflush(stdout);
     unsigned int bytesCount;
@@ -219,7 +218,7 @@ void cdCommand(struct CommandList *commandList)
         currentCluster = (resultEntry->DIR_FstClusLO > resultEntry->DIR_FstClusHI)
                              ? resultEntry->DIR_FstClusLO
                              : resultEntry->DIR_FstClusHI;
-        // printf("%u", currentCluster);
+      
         if (currentCluster != 0)
         {
             utilityProps.prevParentCluster = utilityProps.currentCluster;
@@ -231,13 +230,12 @@ void cdCommand(struct CommandList *commandList)
         printf("ERROR: File doesn't exits");
     }
 
-    printf("\n prev cluster 2 %u\n", utilityProps.prevParentCluster);
-    printf("\n cluster  %u\n", utilityProps.currentCluster);
+   
 }
 
 void creatCommand(struct CommandList *commandList)
 {
-   // fflush(stdout);
+   
     if (commandList->commands[1] == NULL)
     {
         printf("ERROR : enter a file name");
@@ -266,7 +264,7 @@ void creatCommand(struct CommandList *commandList)
 
 void mkdirCommand(struct CommandList *commandList)
 {
-   // fflush(stdout);
+   
     if (commandList->commands[1] == NULL)
     {
         printf("ERROR : enter a file name");
@@ -276,10 +274,7 @@ void mkdirCommand(struct CommandList *commandList)
     unsigned int * bytesCount;
 
     struct DirEntry *result = searchSectorEntry(getClusterOffset(utilityProps.currentCluster), commandList->commands[1], bytesCount);
-    //printf("\n dir atri 0x%X\n \n", result->DIR_Attr);
-    //printf("Input x:");
-    // scanf("%hhu", &result->DIR_Attr);
-    // printf("\n dir name %s\n", result->DIR_name);
+   
 
     if (strlen(result->DIR_name) != 0 && (result->DIR_Attr == 16))
     {
@@ -335,7 +330,7 @@ void mvCommand(struct CommandList *commandList)
 void cpCommand(struct CommandList *commandList)
 {
     fflush(stdout);
-    ///printf("move\n");
+    
 
     unsigned int *bytesCount;
     unsigned int storeCluster;
@@ -358,8 +353,7 @@ void cpCommand(struct CommandList *commandList)
 
     if (strlen(toEntry->DIR_name) == 0 || toEntry->DIR_Attr != ATTR_DIRECTORY)
     {
-        // printf("\nfolder doesn't exist %s\n", toEntry->DIR_name);
-        //fflush(stdout);
+        
         storeCluster = utilityProps.currentCluster;
 
         memcpy(originalFile->DIR_name, commandList->commands[2], sizeof(commandList->commands[2]));
@@ -370,7 +364,7 @@ void cpCommand(struct CommandList *commandList)
         storeCluster = toEntry->DIR_FstClusHI;
 
         storeCluster << 4;
-        printf("\nstoreCluster %u\n", storeCluster);
+     
         storeCluster += toEntry->DIR_FstClusLO;
     }
 
